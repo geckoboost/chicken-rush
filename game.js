@@ -19,14 +19,14 @@ const loginBtn = document.getElementById("login-btn");
 const muteBtn = document.getElementById("mute-btn");
 
 // ==========================================================================
-// AUDIO & EFFETS SONORES (Fichiers externes)
+// AUDIO & EFFETS SONORES (Fichiers externes v2.0)
 // ==========================================================================
 const soundBgm = new Audio("assets/sounds/bg-music.mp3");
-const soundMenuBgm = new Audio("assets/sounds/menu-music.mp3"); // 🎵 Musique d'intro et fin
+const soundMenuBgm = new Audio("assets/sounds/menu-music.mp3"); 
 const soundCatch = new Audio("assets/sounds/catch-insect.mp3");
 const soundCombo = new Audio("assets/sounds/combo.mp3");
-const soundDanger = new Audio("assets/sounds/hit-danger.mp3");  // 🦅/🪵 Pour le Corbeau et la Fouine
-const soundFoxHit = new Audio("assets/sounds/fox-hit.mp3");      // 🦊 Dédié uniquement au Renard
+const soundDanger = new Audio("assets/sounds/hit-danger.mp3");  
+const soundFoxHit = new Audio("assets/sounds/fox-hit.mp3");      
 const soundGameOver = new Audio("assets/sounds/game-over.mp3");
 const soundLevelUp = new Audio("assets/sounds/level-up.mp3"); 
 
@@ -76,26 +76,28 @@ const CHICKEN_SPEED = 8;
 // 2. ÉCOUTEURS D'ÉVÉNEMENTS (CONTROLES ET BOUTONS)
 // ==========================================================================
 
-// Bouton Mute : Coupe/Relance uniquement les musiques de fond, pas les bruitages
-muteBtn.addEventListener("click", (e) => {
-    e.stopPropagation(); // Évite de déclencher la lecture automatique globale
-    isMuted = !isMuted;
-    
-    if (isMuted) {
-        soundBgm.pause(); 
-        soundMenuBgm.pause();
-        muteBtn.textContent = "🔇";
-        muteBtn.classList.add("muted");
-    } else {
-        if (isGameRunning) {
-            soundBgm.play().catch(e => console.log(e)); 
+// Bouton Mute
+if (muteBtn) {
+    muteBtn.addEventListener("click", (e) => {
+        e.stopPropagation(); 
+        isMuted = !isMuted;
+        
+        if (isMuted) {
+            soundBgm.pause(); 
+            soundMenuBgm.pause();
+            muteBtn.textContent = "🔇";
+            muteBtn.classList.add("muted");
         } else {
-            soundMenuBgm.play().catch(e => console.log(e));
+            if (isGameRunning) {
+                soundBgm.play().catch(e => console.log(e)); 
+            } else {
+                soundMenuBgm.play().catch(e => console.log(e));
+            }
+            muteBtn.textContent = "🔊";
+            muteBtn.classList.remove("muted");
         }
-        muteBtn.textContent = "🔊";
-        muteBtn.classList.remove("muted");
-    }
-});
+    });
+}
 
 if (loginBtn) {
     loginBtn.addEventListener("click", () => {
@@ -105,8 +107,8 @@ if (loginBtn) {
 
 if (startBtn) {
     startBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Évite les conflits d'instructions audio
-        introScreen.classList.add("hidden");
+        e.stopPropagation(); 
+        if (introScreen) introScreen.classList.add("hidden");
         soundMenuBgm.pause();
         initGame();
     });
@@ -114,16 +116,16 @@ if (startBtn) {
 
 if (restartBtn) {
     restartBtn.addEventListener("click", (e) => {
-        e.stopPropagation(); // Évite les conflits d'instructions audio
-        gameOverScreen.classList.add("hidden");
+        e.stopPropagation(); 
+        if (gameOverScreen) gameOverScreen.classList.add("hidden");
         soundMenuBgm.pause();
         initGame();
     });
 }
 
-// Lancement automatique de l'ambiance dès le premier clic n'importe où sur l'écran
+// Lancement de l'ambiance au premier clic
 document.addEventListener("click", () => {
-    if (!isGameRunning && gameOverScreen.classList.contains("hidden") && !isMuted) {
+    if (!isGameRunning && gameOverScreen && gameOverScreen.classList.contains("hidden") && !isMuted) {
         soundMenuBgm.play().catch(e => console.log("Attente interaction", e));
     }
 }, { once: true });
@@ -185,18 +187,18 @@ function initGame() {
     keys.left = false;
     keys.right = false;
 
-    scoreSpan.textContent = score;
-    timerSpan.textContent = timeLeft;
+    if (scoreSpan) scoreSpan.textContent = score;
+    if (timerSpan) timerSpan.textContent = timeLeft;
     updateHeartsDisplay();
 
     const oldItems = game.querySelectorAll(".item");
     oldItems.forEach(item => item.remove());
 
-    if (!game.contains(levelBanner)) {
+    if (game && !game.contains(levelBanner)) {
         game.appendChild(levelBanner);
     }
 
-    if (!game.contains(chicken)) {
+    if (game && !game.contains(chicken)) {
         game.insertBefore(chicken, document.getElementById("touchpad"));
     }
     chickenLeft = 106; 
@@ -215,7 +217,7 @@ function initGame() {
         if (!isGameRunning) return;
         
         timeLeft--;
-        timerSpan.textContent = timeLeft;
+        if (timerSpan) timerSpan.textContent = timeLeft;
 
         if (timeLeft === 60) passToLevel(2, 6, 800);
         else if (timeLeft === 30) passToLevel(3, 8, 600);
@@ -232,13 +234,15 @@ function passToLevel(level, speed, spawnRate) {
     itemSpeed = speed;
     spawnSpeed = spawnRate;
 
-    levelBanner.textContent = `NIVEAU ${level}`;
+    if (levelBanner) levelBanner.textContent = `NIVEAU ${level}`;
     
-    levelBanner.classList.remove("pulse-animation");
-    void levelBanner.offsetWidth; 
-    levelBanner.classList.add("pulse-animation");
+    if (levelBanner) {
+        levelBanner.classList.remove("pulse-animation");
+        void levelBanner.offsetWidth; 
+        levelBanner.classList.add("pulse-animation");
+    }
 
-    if (level > 1) {
+    if (level > 1 && !isMuted) {
         soundLevelUp.currentTime = 0;
         soundLevelUp.play().catch(e => console.log("Erreur audio niveau :", e));
     }
@@ -258,12 +262,21 @@ function updateHeartsDisplay() {
 function gameLoop() {
     if (!isGameRunning) return;
 
+    // --- GESTION DYNAMIQUE DE L'ÉCRAN (MIN & MAX POULE) ---
+    const gameWidth = game ? game.clientWidth : 500;
+    const chickenWidth = chicken.offsetWidth || 288;
+
+    // Déplacement Gauche : Empêche le centre/hitbox de la poule de dépasser le bord gauche
     if (keys.left && chickenLeft > -75) {
         chickenLeft -= CHICKEN_SPEED;
     }
-    if (keys.right && chickenLeft < 100) {
+    
+    // Déplacement Droite Dynamique : Calcule automatiquement la limite selon la largeur utile
+    const maxRightPosition = gameWidth - (chickenWidth - 198); 
+    if (keys.right && chickenLeft < maxRightPosition) {
         chickenLeft += CHICKEN_SPEED;
     }
+    
     chicken.style.left = chickenLeft + "px";
 
     const items = game.querySelectorAll(".item");
@@ -330,11 +343,11 @@ function spawnItem() {
     item.style.backgroundImage = chosenType.img;
     item.dataset.value = chosenType.val;
 
-    const randomLeft = Math.floor(Math.random() * 450);
+    const randomLeft = Math.floor(Math.random() * 452);
     item.style.left = randomLeft + "px";
     item.style.top = "-48px";
 
-    game.appendChild(item);
+    if (game) game.appendChild(item);
 }
 
 function handleCollision(item) {
@@ -342,7 +355,6 @@ function handleCollision(item) {
     let textEffect = "";
     let effectClass = "";
     
-    // Détection stricte des types via l'image de fond
     const bgImg = item.style.backgroundImage || "";
     const isWorm = bgImg.includes("worm.png");
     const isInsect = bgImg.includes("worm.png") || bgImg.includes("bug.png") || bgImg.includes("grasshopper.png");
@@ -354,9 +366,10 @@ function handleCollision(item) {
         effectClass = "life-lost";
         wormComboCount = 0;
         
-        // 🦊 Son exclusif dédié au renard
-        soundFoxHit.currentTime = 0;
-        soundFoxHit.play().catch(e => console.log(e));
+        if (!isMuted) {
+            soundFoxHit.currentTime = 0;
+            soundFoxHit.play().catch(e => console.log(e));
+        }
 
         if (lives <= 0) endGame("vies_perdues"); 
     } else {
@@ -377,8 +390,10 @@ function handleCollision(item) {
                     effectClass = "positive";
                     showComboBanner();
                     
-                    soundCombo.currentTime = 0;
-                    soundCombo.play().catch(e => console.log(e));
+                    if (!isMuted) {
+                        soundCombo.currentTime = 0;
+                        soundCombo.play().catch(e => console.log(e));
+                    }
 
                     comboTriggered = true;
                     wormComboCount = 0;
@@ -387,22 +402,21 @@ function handleCollision(item) {
                 wormComboCount = 0;
             }
 
-            // 🐛 Bruit de repas uniquement si c'est un insecte comestible (hors combo)
-            if (!comboTriggered && isInsect) {
+            if (!comboTriggered && isInsect && !isMuted) {
                 soundCatch.currentTime = 0;
                 soundCatch.play().catch(e => console.log(e));
             }
         } else {
-            // 🦅 🪵 Gestion du corbeau (crow) et de la fouine (weasel)
             textEffect = `${points}`;
             effectClass = "negative";
             wormComboCount = 0;
             
-            // Bruitage identique de danger pour le corbeau et la fouine
-            soundDanger.currentTime = 0;
-            soundDanger.play().catch(e => console.log(e));
+            if (!isMuted) {
+                soundDanger.currentTime = 0;
+                soundDanger.play().catch(e => console.log(e));
+            }
         }
-        scoreSpan.textContent = score;
+        if (scoreSpan) scoreSpan.textContent = score;
     }
 
     createFloatingText(textEffect, effectClass, item.style.left, item.style.top);
@@ -415,7 +429,7 @@ function createFloatingText(text, className, left, top) {
     txt.textContent = text;
     txt.style.left = left;
     txt.style.top = top;
-    game.appendChild(txt);
+    if (game) game.appendChild(txt);
     setTimeout(() => { txt.remove(); }, 800);
 }
 
@@ -423,7 +437,7 @@ function showComboBanner() {
     const banner = document.createElement("div");
     banner.classList.add("combo-banner");
     banner.innerText = "BONUS 3 VERS ! +30pts";
-    game.appendChild(banner);
+    if (game) game.appendChild(banner);
     setTimeout(() => { banner.remove(); }, 1500);
 }
 
@@ -438,16 +452,15 @@ function endGame(reason) {
     clearInterval(timerInterval);
     clearInterval(cloudInterval); 
     
-    // On coupe proprement la musique de jeu
     soundBgm.pause();
     soundBgm.currentTime = 0;
 
     if (reason === "vies_perdues") {
-        // On joue le jingle Game Over
-        soundGameOver.currentTime = 0;
-        soundGameOver.play().catch(e => console.log(e));
+        if (!isMuted) {
+            soundGameOver.currentTime = 0;
+            soundGameOver.play().catch(e => console.log(e));
+        }
         
-        // Dès que le jingle de Game Over est fini, on remet la musique de menu automatiquement
         soundGameOver.onended = () => {
             if (!isMuted && !isGameRunning) {
                 soundMenuBgm.currentTime = 0;
@@ -455,7 +468,6 @@ function endGame(reason) {
             }
         };
     } else {
-        // Fin au chronomètre : Lancement immédiat de la musique d'ambiance
         if (!isMuted) {
             soundMenuBgm.currentTime = 0;
             soundMenuBgm.play().catch(e => console.log(e));
@@ -465,7 +477,7 @@ function endGame(reason) {
     keys.left = false;
     keys.right = false;
 
-    if (game.contains(levelBanner)) {
+    if (game && game.contains(levelBanner)) {
         levelBanner.remove();
     }
     
@@ -476,22 +488,20 @@ function endGame(reason) {
     const items = game.querySelectorAll(".item");
     items.forEach(item => item.remove());
 
-    finalScoreSpan.textContent = score;
+    if (finalScoreSpan) finalScoreSpan.textContent = score;
     handleHighScores(score);
     
     if (gameOverScreen) {
         gameOverScreen.classList.remove("hidden");
     }
 
-    // 🔒 SÉCURITÉ NAVIGATEUR : Si le navigateur bloque le son automatique après le Game Over,
-    // un simple clic n'importe où sur l'écran de fin forcera la musique à démarrer.
     const forceAudioOnGameOverClick = () => {
-        if (!isGameRunning && !gameOverScreen.classList.contains("hidden") && !isMuted) {
+        if (!isGameRunning && gameOverScreen && !gameOverScreen.classList.contains("hidden") && !isMuted) {
             soundMenuBgm.play().catch(e => console.log(e));
         }
-        gameOverScreen.removeEventListener("click", forceAudioOnGameOverClick);
+        if (gameOverScreen) gameOverScreen.removeEventListener("click", forceAudioOnGameOverClick);
     };
-    gameOverScreen.addEventListener("click", forceAudioOnGameOverClick);
+    if (gameOverScreen) gameOverScreen.addEventListener("click", forceAudioOnGameOverClick);
 }
 
 function handleHighScores(currentScore) {
@@ -552,5 +562,5 @@ function createSingleCloud(randomStart) {
         const randomDelay = Math.random() * -duration; 
         cloud.style.animationDelay = `${randomDelay}s`;
     }
-    game.insertBefore(cloud, game.firstChild);
+    if (game) game.insertBefore(cloud, game.firstChild);
 }
