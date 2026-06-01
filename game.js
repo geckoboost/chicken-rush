@@ -19,10 +19,14 @@ const loginBtn = document.getElementById("login-btn");
 const muteBtn = document.getElementById("mute-btn");
 
 // ==========================================================================
-// AUDIO & EFFETS SONORES (Fichiers externes v2.0)
+// AUDIO & EFFETS SONORES (Optimisés pour un lancement instantané)
 // ==========================================================================
 const soundBgm = new Audio("assets/sounds/bg-music.mp3");
+soundBgm.preload = "auto"; // Précharge le fichier en mémoire dès l'ouverture du site
+
 const soundMenuBgm = new Audio("assets/sounds/menu-music.mp3"); 
+soundMenuBgm.preload = "auto";
+
 const soundCatch = new Audio("assets/sounds/catch-insect.mp3");
 const soundCombo = new Audio("assets/sounds/combo.mp3");
 const soundDanger = new Audio("assets/sounds/hit-danger.mp3");  
@@ -109,6 +113,8 @@ if (startBtn) {
     startBtn.addEventListener("click", (e) => {
         e.stopPropagation(); 
         if (introScreen) introScreen.classList.add("hidden");
+        
+        // Arrêt immédiat de la musique du menu et lancement flash du jeu
         soundMenuBgm.pause();
         initGame();
     });
@@ -123,8 +129,12 @@ if (restartBtn) {
     });
 }
 
-// Lancement de l'ambiance au premier clic
+// Débloque et précharge de force l'audio des deux musiques dès la première interaction
 document.addEventListener("click", () => {
+    // Force le chargement invisible en tâche de fond pour éviter le décalage
+    soundBgm.load();
+    soundMenuBgm.load();
+    
     if (!isGameRunning && gameOverScreen && gameOverScreen.classList.contains("hidden") && !isMuted) {
         soundMenuBgm.play().catch(e => console.log("Attente interaction", e));
     }
@@ -168,9 +178,10 @@ if (btnLeft && btnRight) {
 function initGame() {
     soundMenuBgm.pause();
 
+    // Lancement prioritaire immédiat
     if (!isMuted) {
         soundBgm.currentTime = 0;
-        soundBgm.play().catch(e => console.log("Attente action joueur", e));
+        soundBgm.play().catch(e => console.log("Lancement audio forcé", e));
     }
 
     score = 0;
