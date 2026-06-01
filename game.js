@@ -261,7 +261,7 @@ function gameLoop() {
     if (keys.left && chickenLeft > -75) {
         chickenLeft -= CHICKEN_SPEED;
     }
-    if (keys.right && chickenLeft < 410) {
+    if (keys.right && chickenLeft < 150) {
         chickenLeft += CHICKEN_SPEED;
     }
     chicken.style.left = chickenLeft + "px";
@@ -330,7 +330,7 @@ function spawnItem() {
     item.style.backgroundImage = chosenType.img;
     item.dataset.value = chosenType.val;
 
-    const randomLeft = Math.floor(Math.random() * 452);
+    const randomLeft = Math.floor(Math.random() * 250);
     item.style.left = randomLeft + "px";
     item.style.top = "-48px";
 
