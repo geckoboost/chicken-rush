@@ -18,12 +18,16 @@ body {
 #game-container {
     width: 100%;
     max-width: 500px;
+    height: 100vh; /* 📱 Force le jeu à occuper exactement la hauteur de l'écran du portable */
+    max-height: 800px; /* Évite qu'il ne devienne trop géant sur tablette */
     position: relative;
     touch-action: manipulation;
     background: linear-gradient(180deg, #64dfdf 0%, #72efdd 40%, #56ab2f 100%);
     -webkit-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    overflow: hidden; /* 🔒 Sécurité : Empêche absolument tout élément de dépasser de l'écran */
+    margin: 0 auto;
 }
 
 /* ==========================================================================
@@ -254,12 +258,10 @@ body {
    ZONE DE JEU PRINCIPALE
    ========================================================================== */
 #game {
-    position: relative;
     width: 100%;
-    height: 700px;
+    height: calc(100% - 130px); /* S'adapte dynamiquement selon la place prise par le HUD et le touchpad */
+    position: relative;
     overflow: hidden;
-    background: url("assets/ground.png") bottom center no-repeat, #87d9fa;
-    background-size: 100% auto, cover; /* ✅ Conserve le ratio de la grange */
 }
 
 #ground {

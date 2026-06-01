@@ -258,10 +258,12 @@ function updateHeartsDisplay() {
 function gameLoop() {
     if (!isGameRunning) return;
 
+// Déplacement à gauche (bloqué au bord gauche)
     if (keys.left && chickenLeft > -75) {
         chickenLeft -= CHICKEN_SPEED;
     }
-    if (keys.right && chickenLeft < 410) {
+    // Déplacement à droite (ajusté précisément pour l'écran mobile)
+    if (keys.right && chickenLeft < 220) {
         chickenLeft += CHICKEN_SPEED;
     }
     chicken.style.left = chickenLeft + "px";
@@ -330,7 +332,8 @@ function spawnItem() {
     item.style.backgroundImage = chosenType.img;
     item.dataset.value = chosenType.val;
 
-    const randomLeft = Math.floor(Math.random() * 452);
+  // 📱 ZONE MOBILE : Les objets tombent uniquement entre 0px et 270px de large
+    const randomLeft = Math.floor(Math.random() * 270);
     item.style.left = randomLeft + "px";
     item.style.top = "-48px";
 
