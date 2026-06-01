@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Chicken Rush</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div id="game-container">
+
+    <div id="hud">
+        <div class="hud-item">🐔 <span id="score">0</span></div>
+        <div class="hud-item">⏱️ <span id="timer">90</span>s</div>
+        <div id="hearts-container">❤️❤️❤️</div>
+        
+        <button id="mute-btn" type="button" aria-label="Couper le son">🔊</button>
+    </div>
+
+    <div id="game">
+        <div id="intro-screen">
+            <div class="brand-header">
+                <img src="assets/logo-crispybug.png" class="logo" alt="CrispyBug Studio"/>
+                <span class="presents-mention">PRÉSENTE</span>
+            </div>
+            
+            <h1 class="game-title">Chicken Rush</h1>
+            <img src="assets/chicken.png" class="intro-chicken" alt="Chicken Rush"/>
+            <p class="intro-text">Aidez votre poule à attraper les insectes !</p>
+
+            <div class="rules">			
+                <div class="rule-item combo-rule">
+                    <img src="assets/worm.png" alt="" class="rule-worm-icon"/>
+                    <span><strong>COMBO !</strong> 3 vers d'affilée = <strong>+30 pts !</strong></span>
+                </div>
+                <div class="rule-item">
+                    <img src="assets/worm.png" alt=""/>
+                    <span>+10 points</span>
+                </div>
+                <div class="rule-item">
+                    <img src="assets/bug.png" alt=""/>
+                    <span>+25 points</span>
+                </div>
+                <div class="rule-item">
+                    <img src="assets/grasshopper.png" alt=""/>
+                    <span>+50 points</span>
+                </div>
+                <div class="rule-item danger">
+                    <img src="assets/crow.png" alt=""/>
+                    <span>-50 points</span>
+                </div>
+                <div class="rule-item danger">
+                    <img src="assets/weasel.png" alt=""/>
+                    <span>-100 points</span>
+                </div>
+                <div class="rule-item danger">
+                    <img src="assets/fox.png" alt=""/>
+                    <span>-1 vie</span>
+                </div>
+            </div>
+
+            <button id="start-btn" type="button">JOUER</button>
+            
+            <div class="marketing-copyright">Copyright © CrispyBug 2026</div>
+        </div>
+
+        <div id="ground"></div>
+        
+        <div id="touchpad">
+            <button id="btn-left" type="button">◀</button>
+            <button id="btn-right" type="button">▶</button>
+        </div>
+    </div>
+
+    <div id="game-over" class="hidden">
+        <h2>Fin de partie</h2>
+        <p class="current-score-text">Score final : <span id="final-score">0</span></p>
+        
+        <div class="promo-banner">
+            <p class="promo-title">🔥 GAGNEZ UNE RÉDUCTION ! 🔥</p>
+            <p class="promo-text">Finissez dans les <strong>premiers de la semaine</strong> pour remporter votre bon d'achat !</p>
+            <p class="promo-subtext">Connectez-vous pour enregistrer votre score et comparer vos résultats avec les autres joueurs.</p>
+            <button id="login-btn" type="button">🔐 SE CONNECTER</button>
+        </div>
+
+        <div class="high-scores-container">
+            <h3>🏆 MEILLEURS SCORES 🏆</h3>
+            <ol id="high-scores-list">
+                </ol>
+        </div>
+
+        <button id="restart-btn" type="button">Rejouer</button>
+
+        <div class="gameover-website">
+            <a href="https://www.crispybug.com" target="_blank">www.crispybug.com</a>
+        </div>
+    </div>
+
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>

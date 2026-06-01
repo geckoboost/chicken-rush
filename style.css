@@ -1,0 +1,559 @@
+/* ==========================================================================
+   CONFIGURATIONS GÉNÉRALES
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #87ceeb;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+}
+
+#game-container {
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    touch-action: manipulation;
+    background: linear-gradient(180deg, #64dfdf 0%, #72efdd 40%, #56ab2f 100%);
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ==========================================================================
+   ÉCRANS (INTRO & GAME OVER)
+   ========================================================================== */
+#intro-screen, #game-over {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(10, 24, 47, 0.98), rgba(16, 43, 72, 0.99));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    color: white;
+    z-index: 100;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+#game-over {
+    justify-content: center;
+    gap: 15px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   DESIGN IDENTITÉ BRANDING (CRISPYBUG)
+   ========================================================================== */
+.brand-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+.logo {
+    width: 85px;
+    height: auto;
+    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.5));
+	margin-top: -15px;
+}
+
+.presents-mention {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: #00e676;
+    margin-top: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+}
+
+.game-title {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 48px;
+    font-weight: 900;
+    font-style: italic;
+    letter-spacing: 1px;
+    background: linear-gradient(to bottom, #fff176, #fbc02d);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+    filter: drop-shadow(3px 3px 0px #0d47a1);
+    margin-top: -1px;
+    margin-bottom: -20px;
+    padding-right: 10px; /* ✅ Empêche le H d'être rogné */
+}
+
+.intro-chicken {
+    width: 130px;
+    height: auto;
+	margin-top: -15px;
+    margin-bottom: -40px;
+    filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.4));
+}
+
+.intro-text {
+    font-size: 15px;
+    font-weight: bold;
+    color: #e0f7fa;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+	margin-top: -15px;
+    margin-bottom: 10px;
+}
+
+/* ==========================================================================
+   PANNEAU DES RÈGLES DU JEU
+   ========================================================================== */
+.rules {
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px solid rgba(0, 230, 118, 0.3);
+    border-radius: 12px;
+    padding: 12px 20px;
+    width: 90%;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.rule-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.rule-item img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.6));
+}
+
+.rule-item.danger span {
+    color: #ff5252;
+}
+
+/* Style de la règle combo */
+.combo-rule {
+    border-bottom: 2px dashed rgba(255, 215, 0, 0.4);
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+}
+
+.combo-rule span {
+    color: #ffd700 !important;
+    font-size: 14px;
+}
+
+.rule-worm-icon {
+    filter: drop-shadow(0px 0px 4px #ffd700) !important;
+}
+
+/* ==========================================================================
+   BOUTONS DES ÉCRANS INTERFACES
+   ========================================================================== */
+#start-btn, #restart-btn {
+    padding: 12px 40px;
+    font-size: 20px;
+    font-family: 'Impact', sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #00e676, #00c853);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 0px #007e33, 0 6px 15px rgba(0,0,0,0.4);
+    transition: transform 0.1s;
+}
+
+#start-btn:active, #restart-btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0px #007e33, 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.marketing-copyright {
+    font-size: 9px;
+    color: #78909c;
+    margin-top: 15px;
+    font-family: monospace;
+}
+
+/* ==========================================================================
+   HUD & BARRE SUPÉRIEURE DE JEU
+   ========================================================================== */
+#hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #333;
+    color: white;
+    padding: 10px 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border-bottom: 3px solid #111;
+}
+
+.hud-item {
+    font-family: monospace;
+}
+
+#hearts-container {
+    letter-spacing: 2px;
+}
+
+#mute-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s, background 0.2s;
+    margin-left: 5px;
+}
+
+#mute-btn:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+}
+
+#mute-btn:active {
+    transform: scale(0.9);
+}
+
+#mute-btn.muted {
+    background: rgba(0, 0, 0, 0.4);
+    border-color: #b0bec5;
+}
+
+/* ==========================================================================
+   ZONE DE JEU PRINCIPALE
+   ========================================================================== */
+#game {
+    position: relative;
+    width: 100%;
+    height: 700px;
+    overflow: hidden;
+    background: url("assets/ground.png") bottom center no-repeat, #87d9fa;
+    background-size: 100% auto, cover; /* ✅ Conserve le ratio de la grange */
+}
+
+#ground {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+}
+
+/* ==========================================================================
+   PERSONNAGE DE LA POULE
+   ========================================================================== */
+.chicken {
+    position: absolute;
+    width: 288px;
+    height: 288px;
+    background: url("assets/chicken.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    bottom: -115px; /* ✅ Positionnée parfaitement sur le gazon */
+    z-index: 10;
+    transition: left 0.1s linear;
+}
+
+/* ==========================================================================
+   OBJETS ET PRÉDATEURS TOMBANTS
+   ========================================================================== */
+.item {
+    position: absolute;
+    width: 96px;
+    height: 96px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 5;
+}
+
+/* ==========================================================================
+   EFFETS DE TEXTES FLOTTANTS (SCORE & MALUS)
+   ========================================================================== */
+.floating-text {
+    position: absolute;
+    font-family: 'Impact', sans-serif;
+    font-size: 48px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 50;
+    animation: floatUp 0.8s ease-out forwards;
+    text-shadow: 2px 2px 0px #000;
+}
+
+.floating-text.positive { color: #00e676; }
+.floating-text.negative { color: #ff5252; }
+.floating-text.life-lost { color: #ff1744; font-size: 28px; }
+
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-60px); opacity: 0; }
+}
+
+/* ==========================================================================
+   INTERFACE TOUCHPAD MOBILE / SOURIS
+   ========================================================================== */
+#touchpad {
+    position: absolute;
+    bottom: 15px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 25px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+#btn-left, #btn-right {
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.8);
+    background: rgba(0, 0, 0, 0.4);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-left:active, #btn-right:active {
+    background: rgba(0, 230, 118, 0.6);
+    transform: scale(0.95);
+}
+
+/* ==========================================================================
+   ÉLÉMENTS DE DÉCORS : NUAGES
+   ========================================================================== */
+.cloud {
+    position: absolute;
+    background: url("assets/cloud.png") no-repeat center;
+    background-size: contain;
+    opacity: 0.75;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes moveCloud {
+    from { transform: translateX(-150px); }
+    to { transform: translateX(550px); }
+}
+
+/* ==========================================================================
+   BANNIÈRE DE COMBO AU CENTRE DU CIEL
+   ========================================================================== */
+.combo-banner {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    font-family: 'Impact', sans-serif;
+    font-size: 36px;
+    font-weight: bold;
+    font-style: italic;
+    color: #ffd700;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0px #000, -2px -2px 0px #000, 2px -2px 0px #000, -2px 3px 0px #000;
+    filter: drop-shadow(0px 0px 10px rgba(255, 215, 0, 0.6));
+    z-index: 20;
+    animation: popBanner 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popBanner {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+    25% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    85% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+}
+
+/* ==========================================================================
+   ANNONCE PUBLICITAIRE / PROMO & MEILLEURS SCORES
+   ========================================================================== */
+.promo-banner {
+    background: linear-gradient(135deg, rgba(255, 183, 77, 0.15), rgba(245, 124, 0, 0.2));
+    border: 2px dashed #ffb74d;
+    border-radius: 12px;
+    padding: 12px;
+    width: 85%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.promo-title {
+    font-family: 'Impact', sans-serif;
+    font-size: 18px;
+    color: #ffeb3b;
+    margin-bottom: 4px;
+}
+
+.promo-text {
+    font-size: 13px;
+    color: #ffffff;
+    line-height: 1.3;
+    margin-bottom: 8px;
+}
+
+.promo-text strong { color: #ffb74d; }
+
+.promo-subtext {
+    font-size: 11px;
+    color: #b0bec5;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+#login-btn {
+    padding: 6px 18px;
+    border: none;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #00e676;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 230, 118, 0.3);
+    transition: transform 0.1s;
+}
+
+#login-btn:active { transform: scale(0.95); }
+
+.current-score-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.high-scores-container {
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 12px;
+    padding: 12px 20px;
+    width: 85%;
+    max-width: 320px;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.high-scores-container h3 {
+    font-family: 'Impact', sans-serif;
+    font-size: 18px;
+    color: #ffd700;
+    margin-bottom: 8px;
+}
+
+#high-scores-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#high-scores-list li {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: monospace;
+    color: #e0f7fa;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-bottom: 2px;
+    display: flex;
+    justify-content: space-between;
+}
+
+#high-scores-list li:first-child {
+    color: #ffeb3b;
+    font-size: 18px;
+}
+
+/* ==========================================================================
+   AFFICHAGE DYNAMIQUE DU NIVEAU DANS LE CIEL
+   ========================================================================== */
+.sky-level-display {
+    position: absolute;
+    top: 80px; /* Positionné juste en dessous du HUD */
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Impact', sans-serif;
+    font-size: 38px;
+    letter-spacing: 3px;
+    color: rgba(255, 255, 255, 0.25); /* Blanc semi-transparent très esthétique */
+    text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    pointer-events: none; /* Ignore les clics souris/tactile */
+    z-index: 2; /* Devant les nuages, derrière le touchpad et le joueur */
+    text-align: center;
+    user-select: none;
+}
+
+/* Animation lors du changement de niveau */
+.pulse-animation {
+    animation: levelPulse 0.6s ease-out;
+}
+
+@keyframes levelPulse {
+    0% {
+        transform: translateX(-50%) scale(1);
+        color: rgba(255, 255, 255, 0.25);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.3);
+        color: rgba(255, 235, 59, 0.8); /* Flash jaune doré au milieu de l'effet */
+        text-shadow: 0px 4px 15px rgba(245, 124, 0, 0.5);
+    }
+    100% {
+        transform: translateX(-50%) scale(1);
+        color: rgba(255, 255, 255, 0.25);
+    }
+}
+
+/* ==========================================================================
+   STYLE DU LIEN CRISPYBUG (ÉCRAN GAME OVER)
+   ========================================================================== */
+.gameover-website a {
+    color: #ffffff; /* Couleur blanche pour un maximum de contraste */
+    text-decoration: underline; /* Laisse le lien souligné pour bien l'identifier */
+    font-weight: bold;
+    font-size: 16px;
+    transition: color 0.2s ease;
+}
+
+/* Changement de couleur uniquement lorsque la souris passe dessus */
+.gameover-website a:hover {
+    color: #ffeb3b; /* Devient jaune vif au survol */
+}
