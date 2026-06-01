@@ -343,7 +343,7 @@ function spawnItem() {
     item.style.backgroundImage = chosenType.img;
     item.dataset.value = chosenType.val;
 
-    const randomLeft = Math.floor(Math.random() * 452);
+	const randomLeft = Math.max(0, Math.floor(Math.random() * 452) - 30);
     item.style.left = randomLeft + "px";
     item.style.top = "-48px";
 
