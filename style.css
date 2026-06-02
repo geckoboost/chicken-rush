@@ -86,7 +86,7 @@ body {
 
 .game-title {
     font-family: 'Impact', 'Arial Black', sans-serif;
-    /* ✅ S'adapte de façon fluide entre 32px (mobile) et 48px (PC max) */
+    /* ✅ S'adapte de façon fluide entre 16px (mobile) et 48px (PC max) */
     font-size: clamp(16px, 12vw, 48px); 
     font-weight: 900;
     font-style: italic;
@@ -98,7 +98,16 @@ body {
     filter: drop-shadow(3px 3px 0px #0d47a1);
     margin-top: -1px;
     margin-bottom: -20px;
-    padding-right: 10px; /* ✅ Empêche le H d'être rogné */
+    
+    /* 🎯 CENTRAGE ABSOLU */
+    display: block;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box; /* Garantit que les paddings n'agrandissent pas le bloc */
+    
+    /* ✅ Équilibre des espaces pour compenser l'inclinaison de l'italique */
+    padding-right: 10px; /* Empêche le H d'être rogné */
+    padding-left: 10px;  /* Compense à gauche pour un centrage parfait */
 }
 
 .intro-chicken {
