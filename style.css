@@ -96,20 +96,22 @@ body {
     -webkit-text-fill-color: transparent;
     text-transform: uppercase;
     filter: drop-shadow(3px 3px 0px #0d47a1);
+    
+    /* 🎯 CENTRAGE ABSOLU ET DESTRUCTEUR DE BUGS SUR MOBILE */
+    display: block !important;
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
+
+    /* ✅ Gestion des espaces et de l'inclinaison */
     margin-top: -1px;
     margin-bottom: -20px;
-    
-    /* 🎯 CENTRAGE ABSOLU */
-    display: block;
-    text-align: center;
-    width: 100%;
-    box-sizing: border-box; /* Garantit que les paddings n'agrandissent pas le bloc */
-    
-    /* ✅ Équilibre des espaces pour compenser l'inclinaison de l'italique */
     padding-right: 10px; /* Empêche le H d'être rogné */
-    padding-left: 10px;  /* Compense à gauche pour un centrage parfait */
+    padding-left: 10px;  /* Équilibre parfait du centrage */
 }
-
 .intro-chicken {
     width: 130px;
     height: auto;
