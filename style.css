@@ -87,7 +87,7 @@ body {
 .game-title {
     font-family: 'Impact', 'Arial Black', sans-serif;
     /* ✅ S'adapte de façon fluide entre 32px (mobile) et 48px (PC max) */
-    font-size: clamp(32px, 8vw, 48px); 
+    font-size: clamp(16px, 12vw, 48px); 
     font-weight: 900;
     font-style: italic;
     letter-spacing: 1px;
