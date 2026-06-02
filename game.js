@@ -73,6 +73,28 @@ const keys = {
 const CHICKEN_SPEED = 8; 
 
 // ==========================================================================
+// CLIGNOTEMENT SÉCURISÉ POUR MOBILE (FONCTION JAVASCRIPT)
+// ==========================================================================
+function startMobileBlink() {
+    const promoText = document.querySelector(".promo-text");
+    
+    // Si le texte existe sur la page, on lance la boucle de clignotement
+    if (promoText) {
+        setInterval(() => {
+            // Si l'opacité est basse ou invisible, on le remet au max, sinon on l'estompe
+            if (promoText.style.opacity === "0.2") {
+                promoText.style.opacity = "1";
+            } else {
+                promoText.style.opacity = "0.2";
+            }
+        }, 750); // Clignote toutes les 750ms (équivalent à l'animation 1.5s du CSS)
+    }
+}
+
+// Lance le clignotement dès que l'écran d'accueil est prêt
+window.addEventListener("DOMContentLoaded", startMobileBlink);
+
+// ==========================================================================
 // 2. ÉCOUTEURS D'ÉVÉNEMENTS (CONTROLES ET BOUTONS)
 // ==========================================================================
 
