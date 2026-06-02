@@ -258,32 +258,26 @@ function updateHeartsDisplay() {
 function gameLoop() {
     if (!isGameRunning) return;
 
-    // 1. On récupère dynamiquement la largeur actuelle du jeu (s'adapte au PC et au Mobile)
+    // Déplacement de la poule (Adapté PC/Mobile)
     const gameWidth = game ? game.clientWidth : 500;
-    // 2. On récupère la largeur physique de la poule
     const chickenWidth = chicken.offsetWidth || 288;
 
-    // Déplacement Gauche (calculé dynamiquement selon la largeur de la poule)
-    // -75 correspond au décalage visuel de la poule dans son sprite
     if (keys.left && chickenLeft > -75) {
         chickenLeft -= CHICKEN_SPEED;
     }
-    
-    // Déplacement Droite DYNAMIQUE
-    // Au lieu de bloquer à 410, on calcule la limite selon la largeur réelle de l'écran
     const maxRightPosition = gameWidth - (chickenWidth - 198); 
     if (keys.right && chickenLeft < maxRightPosition) {
         chickenLeft += CHICKEN_SPEED;
     }
-    
     chicken.style.left = chickenLeft + "px";
 
-    // --- Reste du code de détection des collisions (inchangé) ---
     const items = game.querySelectorAll(".item");
     const chickenRect = chicken.getBoundingClientRect();
 
+    // Hitbox physique réelle de la poule
     const chickenHitbox = {
         top: chickenRect.top + 195, 
+        bottom: chickenRect.bottom - 60, // 👈 Ajout du bas de la hitbox
         left: chickenRect.left + 80,    
         right: chickenRect.right - 100   
     };
@@ -295,10 +289,11 @@ function gameLoop() {
 
         const itemRect = item.getBoundingClientRect();
 
+        // 🎯 RECTIFICATION DE LA CONDITION DE COLLISION
         if (
-            itemRect.bottom >= chickenHitbox.top &&
-            itemRect.top <= chickenRect.bottom &&
-            itemRect.right >= chickenHitbox.left &&
+            itemRect.bottom >= chickenHitbox.top &&    // L'insecte touche le haut de la poule
+            itemRect.top <= chickenHitbox.bottom &&   // ⚙️ CORRECTION : L'insecte n'est pas encore descendu SOUS la poule
+            itemRect.right >= chickenHitbox.left &&    // L'insecte est dans l'alignement horizontal
             itemRect.left <= chickenHitbox.right
         ) {
             handleCollision(item);

@@ -118,6 +118,30 @@ body {
     margin-bottom: 10px;
 }
 
+.promo-text {
+    font-family: 'Arial', sans-serif;
+    font-size: clamp(14px, 4.5vw, 20px); /* Adapté PC et Mobile */
+    font-weight: bold;
+    color: #ffca28; /* Un jaune/orangé brillant qui ressort bien */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    margin-top: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+/* ⏳ L'animation de clignotement */
+.blink-effect {
+    animation: softBlink 1.5s infinite ease-in-out;
+}
+
+@keyframes softBlink {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; } /* Le texte s'estompe à 20% */
+    100% { opacity: 1; }
+}
+
 /* ==========================================================================
    PANNEAU DES RÈGLES DU JEU
    ========================================================================== */
