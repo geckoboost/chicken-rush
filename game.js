@@ -343,7 +343,17 @@ function spawnItem() {
     item.style.backgroundImage = chosenType.img;
     item.dataset.value = chosenType.val;
 
-	const randomLeft = Math.max(0, Math.floor(Math.random() * 452) - 30);
+    // 1. Récupération de la largeur réelle du conteneur de jeu (PC ou Mobile)
+    const gameWidth = game ? game.clientWidth : 500;
+    
+    // 2. Calcul de la limite maximale à droite (Largeur écran - Largeur de l'insecte)
+    const maxAllowedRight = gameWidth - 48; 
+    
+    // 3. Calcul de la position avec le décalage de -30px vers la gauche
+    // Math.min empêche de dépasser à droite de l'écran
+    // Math.max empêche de dépasser à gauche de l'écran (sous la barre des 0px)
+    const randomLeft = Math.max(0, Math.min(maxAllowedRight, Math.floor(Math.random() * gameWidth) - 30));
+
     item.style.left = randomLeft + "px";
     item.style.top = "-48px";
 
