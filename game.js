@@ -1,4 +1,56 @@
 // ==========================================================================
+// SYSTEME DE NOTIFICATION PERSONNALISÉ CHICKEN RUSH (Placé en haut pour être disponible partout)
+// ==========================================================================
+function showAlert(message) {
+    const alertBox = document.getElementById("custom-alert");
+    const alertMessage = document.getElementById("custom-alert-message");
+    
+    if (alertBox && alertMessage) {
+        alertMessage.textContent = message;
+        alertBox.style.display = "block";
+        alertBox.style.animation = "fadeIn 0.3s ease-out";
+
+        // Supprime l'ancien timer de fermeture s'il y en a un actif
+        if (window.alertTimeout) clearTimeout(window.alertTimeout);
+
+        window.alertTimeout = setTimeout(() => {
+            alertBox.style.display = "none";
+        }, 3500);
+    } else {
+        // Sécurité si les éléments HTML ne sont pas trouvés
+        alert(message);
+    }
+}
+
+// Outil de confirmation stylisé Chicken Rush (remplace le confirm() natif, qui
+// affiche obligatoirement le domaine de l'hébergeur — impossible à rebrander).
+function showConfirm(message, onConfirm) {
+    const box = document.getElementById("custom-confirm");
+    const msg = document.getElementById("custom-confirm-message");
+    const okBtn = document.getElementById("custom-confirm-ok");
+    const cancelBtn = document.getElementById("custom-confirm-cancel");
+
+    // Fallback de sécurité si la modale HTML est absente
+    if (!box || !msg || !okBtn || !cancelBtn) {
+        if (confirm(message)) onConfirm();
+        return;
+    }
+
+    msg.textContent = message;
+    box.style.display = "flex";
+
+    // On clone les boutons pour purger les anciens écouteurs (évite les doublons)
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    okBtn.replaceWith(newOk);
+    cancelBtn.replaceWith(newCancel);
+
+    const close = () => { box.style.display = "none"; };
+    newOk.addEventListener("click", () => { close(); onConfirm(); });
+    newCancel.addEventListener("click", close);
+}
+
+// ==========================================================================
 // 0. CONFIGURATION & INITIALISATION FIREBASE (Avec Auth et Firestore)
 // ==========================================================================
 
@@ -19,7 +71,7 @@ let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
     const { getFirestore } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
-    const { getAuth, onAuthStateChanged, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
+    const { getAuth, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
 
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
@@ -27,23 +79,25 @@ let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
     console.log("✅ Firebase & Auth prêts");
 
     // Écouteur d'état de connexion de l'utilisateur
-		onAuthStateChanged(auth, (user) => {
-				const loginBtn = document.getElementById("login-btn");
-				if (user && loginBtn) {
-					const pseudo = user.displayName || "Joueur";
-					localStorage.setItem("playerPseudo", pseudo);
-					loginBtn.innerHTML = `👤 Profil : <strong>${pseudo}</strong>`;
+    onAuthStateChanged(auth, (user) => {
+        const loginBtn = document.getElementById("login-btn");
+        if (user && loginBtn) {
+            const pseudo = user.displayName || "Joueur";
+            localStorage.setItem("playerPseudo", pseudo);
+            loginBtn.innerHTML = `👤 Profil : <strong>${pseudo}</strong>`;
+            updatePlayerNameHUD(); // 👈 met à jour le pseudo dans la barre des scores
 
-					// 👑 VERIFICATION DES DROITS ADMIN
-					if (user.email === ADMIN_EMAIL && adminResetBtn) {
-						adminResetBtn.style.display = "block"; // Affiche le bouton secret
-					}
-				} else {
-					localStorage.removeItem("playerPseudo");
-					if (loginBtn) loginBtn.innerHTML = `🔐 SE CONNECTER / S'INSCRIRE`;
-					if (adminResetBtn) adminResetBtn.style.display = "none"; // Cache le bouton
-				}
-			});
+            // 👑 VERIFICATION DES DROITS ADMIN
+            if (user.email === ADMIN_EMAIL && adminResetBtn) {
+                adminResetBtn.style.display = "block"; // Affiche le bouton secret
+            }
+        } else {
+            localStorage.removeItem("playerPseudo");
+            if (loginBtn) loginBtn.innerHTML = `🔐 SE CONNECTER / S'INSCRIRE`;
+            updatePlayerNameHUD(); // 👈 repasse en "Invité"
+            if (adminResetBtn) adminResetBtn.style.display = "none"; // Cache le bouton
+        }
+    });
 
   } catch (e) {
     console.warn("⚠️ Firebase indisponible — mode local actif :", e);
@@ -54,7 +108,7 @@ let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
 // 1. ÉLÉMENTS DU DOM & VARIABLES GLOBALES
 // ==========================================================================
 const adminResetBtn = document.getElementById("admin-reset-btn");
-const ADMIN_EMAIL = "christophe.gineste@hotmail.fr"; // 👈 REMPLACEZ PAR VOTRE EMAIL FIREBASE
+const ADMIN_EMAIL = "christophe.gineste@hotmail.fr"; // 👈 EMAIL FIREBASE VALIDE
 const game = document.getElementById("game");
 const introScreen = document.getElementById("intro-screen");
 const gameOverScreen = document.getElementById("game-over");
@@ -109,6 +163,7 @@ let timerInterval;
 let cloudInterval; 
 let isGameRunning = false;
 let wormComboCount = 0; 
+let expertBonusShown = false; // Bonus expert affiché une seule fois par partie
 
 let levelBanner = document.createElement("div");
 levelBanner.classList.add("sky-level-display");
@@ -139,7 +194,6 @@ window.addEventListener("DOMContentLoaded", startMobileBlink);
 // 2. ÉCOUTEURS D'ÉVÉNEMENTS & SYSTÈME D'AUTHENTIFICATION (CONNEXION COMPTE)
 // ==========================================================================
 
-// 👉 Bouton JOUER
 if (startBtn) {
     startBtn.addEventListener("click", () => {
         if (introScreen) introScreen.classList.add("hidden");
@@ -147,7 +201,6 @@ if (startBtn) {
     });
 }
 
-// Bouton Mute
 muteBtn.addEventListener("click", (e) => {
     e.stopPropagation();
     isMuted = !isMuted;
@@ -161,17 +214,13 @@ muteBtn.addEventListener("click", (e) => {
     }
 });
 
-// Clic sur le bouton de connexion principal -> Ouvre la fenêtre d'authentification
 if (loginBtn) {
     loginBtn.addEventListener("click", () => {
         if (auth && auth.currentUser) {
-            // Si déjà connecté, propose de se déconnecter
-            const deconnexion = confirm(`Vous êtes connecté en tant que "${auth.currentUser.displayName}". Voulez-vous vous déconnecter ?`);
-            if (deconnexion) {
-                auth.signOut().then(() => alert("Déconnecté !"));
-            }
+            showConfirm(`Vous êtes connecté en tant que "${auth.currentUser.displayName}". Voulez-vous vous déconnecter ?`, () => {
+                auth.signOut().then(() => showAlert("Déconnecté ! 👋"));
+            });
         } else {
-            // Sinon ouvre la boîte de dialogue
             if (authModal) {
                 authModal.style.display = "flex";
                 authModal.classList.remove("hidden");
@@ -180,7 +229,6 @@ if (loginBtn) {
     });
 }
 
-// Fermer la fenêtre d'authentification
 if (authCloseBtn) {
     authCloseBtn.addEventListener("click", () => {
         if (authModal) {
@@ -190,24 +238,22 @@ if (authCloseBtn) {
     });
 }
 
-// Basculer entre Inscription (Sign up) et Connexion (Login)
 if (authSwitchText) {
     authSwitchText.addEventListener("click", () => {
         if (currentAuthMode === "signup") {
             currentAuthMode = "login";
             authTitle.textContent = "Connexion";
-            authPseudoInput.parentElement.style.display = "none"; // Cache le pseudo pour la connexion
+            authPseudoInput.parentElement.style.display = "none"; 
             authSwitchText.textContent = "Pas de compte ? Inscrivez-vous ici";
         } else {
             currentAuthMode = "signup";
             authTitle.textContent = "Créer un compte";
-            authPseudoInput.parentElement.style.display = "block"; // Affiche le pseudo pour l'inscription
+            authPseudoInput.parentElement.style.display = "block"; 
             authSwitchText.textContent = "Déjà un compte ? Connectez-vous ici";
         }
     });
 }
 
-// Soumission du formulaire d'authentification (Bouton Valider)
 if (authSubmitBtn) {
     authSubmitBtn.addEventListener("click", async () => {
         const email = authEmailInput.value.trim();
@@ -215,7 +261,7 @@ if (authSubmitBtn) {
         const pseudo = authPseudoInput.value.trim();
 
         if (!email || !password) {
-            alert("Veuillez remplir l'adresse e-mail et le mot de passe.");
+            showAlert("⚠️ Veuillez remplir l'adresse e-mail et le mot de passe.");
             return;
         }
 
@@ -227,41 +273,42 @@ if (authSubmitBtn) {
 
         try {
             if (currentAuthMode === "signup") {
-                // INSCRIPTION
                 if (!pseudo) {
-                    alert("Veuillez choisir un pseudo.");
+                    showAlert("⚠️ Veuillez choisir un pseudo.");
                     authSubmitBtn.textContent = "Valider"; authSubmitBtn.disabled = false;
                     return;
                 }
 
-                // Vérification si le pseudo est déjà pris dans la base des scores
                 if (db) {
                     const qCheck = query(collection(db, "leaderboard"), where("name", "==", pseudo));
                     const checkSnapshot = await getDocs(qCheck);
                     if (!checkSnapshot.empty) {
-                        alert(`❌ Le pseudo "${pseudo}" est déjà pris par un autre joueur.`);
+                        showAlert(`❌ Le pseudo "${pseudo}" est déjà pris par un autre joueur.`);
                         authSubmitBtn.textContent = "Valider"; authSubmitBtn.disabled = false;
                         return;
                     }
                 }
 
-                // Création du compte Firebase Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                // Enregistrement du pseudo dans le profil Firebase
                 await updateProfile(userCredential.user, { displayName: pseudo });
-                
-                alert(`Compte créé avec succès ! Bienvenue ${pseudo} 🎉`);
+
+                // 🔧 onAuthStateChanged a capturé l'utilisateur AVANT que updateProfile
+                // ne pose le displayName (et ne se re-déclenche pas après). On force donc
+                // la mise à jour du HUD et du bouton ici, où le pseudo est connu.
+                localStorage.setItem("playerPseudo", pseudo);
+                if (loginBtn) loginBtn.innerHTML = `👤 Profil : <strong>${pseudo}</strong>`;
+                updatePlayerNameHUD();
+
+                showAlert(`Compte créé avec succès ! Bienvenue ${pseudo} 🎉`);
             } else {
-                // CONNEXION
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                alert(`Ravi de vous revoir ${userCredential.user.displayName || "Joueur"} ! 👋`);
+                updatePlayerNameHUD(); // 🔧 reflète le pseudo dès la connexion
+                showAlert(`Ravi de vous revoir ${userCredential.user.displayName || "Joueur"} ! 👋`);
             }
 
-            // Fermeture de la fenêtre après succès
             authModal.style.display = "none";
             authModal.classList.add("hidden");
 
-            // Si une partie vient d'être finie, on pousse le score automatiquement
             if (score > 0 && !isGameRunning) {
                 const userPseudo = auth.currentUser.displayName || pseudo;
                 submitWeeklyScore(userPseudo, score);
@@ -269,11 +316,11 @@ if (authSubmitBtn) {
 
         } catch (error) {
             console.error(error);
-            if (error.code === "auth/email-already-in-use") alert("Cette adresse e-mail est déjà associée à un compte.");
-            else if (error.code === "auth/weak-password") alert("Le mot de passe doit contenir au moins 6 caractères.");
-            else if (error.code === "auth/invalid-email") alert("Format de l'adresse e-mail invalide.");
-            else if (error.code === "auth/wrong-password" || error.code === "auth/user-not-found") alert("Identifiants incorrects.");
-            else alert("Une erreur est survenue lors de l'authentification : " + error.message);
+            if (error.code === "auth/email-already-in-use") showAlert("❌ Cette adresse e-mail est déjà associée à un compte.");
+            else if (error.code === "auth/weak-password") showAlert("❌ Le mot de passe doit contenir au moins 6 caractères.");
+            else if (error.code === "auth/invalid-email") showAlert("❌ Format de l'adresse e-mail invalide.");
+            else if (error.code === "auth/wrong-password" || error.code === "auth/user-not-found") showAlert("❌ Identifiants incorrects.");
+            else showAlert("Une erreur est survenue : " + error.message);
         } finally {
             authSubmitBtn.textContent = "Valider";
             authSubmitBtn.disabled = false;
@@ -296,7 +343,6 @@ document.addEventListener("click", () => {
     }
 }, { once: true });
 
-// Controles Clavier & Tactiles
 document.addEventListener("keydown", (e) => {
     if (e.key === "ArrowLeft" || e.key === "q" || e.key === "Q") keys.left = true;
     if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = true;
@@ -329,11 +375,12 @@ function initGame() {
         soundBgm.play().catch(e => console.log("Attente action joueur", e));
     }
 
-    score = 0; lives = 3; timeLeft = 90; currentLevel = 1; itemSpeed = 4; spawnSpeed = 1000; isGameRunning = true; wormComboCount = 0;
+    score = 0; lives = 3; timeLeft = 90; currentLevel = 1; itemSpeed = 4; spawnSpeed = 1000; isGameRunning = true; wormComboCount = 0; expertBonusShown = false;
     generateClouds();
     keys.left = false; keys.right = false;
     scoreSpan.textContent = score; timerSpan.textContent = timeLeft;
     updateHeartsDisplay();
+    updatePlayerNameHUD(); // 👈 affiche le pseudo dès le début de partie
 
     const oldItems = game.querySelectorAll(".item");
     oldItems.forEach(item => item.remove());
@@ -380,6 +427,16 @@ function passToLevel(level, speed, spawnRate) {
 
 function updateHeartsDisplay() {
     if (heartsContainer) heartsContainer.textContent = "❤️".repeat(lives);
+}
+
+// Affiche le pseudo du joueur dans le HUD : displayName Firebase si connecté,
+// sinon le dernier pseudo mémorisé, sinon "Invité". Tolère l'absence de Firebase.
+function updatePlayerNameHUD() {
+    const span = document.getElementById("player-name");
+    if (!span) return;
+    const pseudo = (auth && auth.currentUser && auth.currentUser.displayName)
+        || localStorage.getItem("playerPseudo");
+    span.textContent = pseudo || "Invité";
 }
 
 function gameLoop() {
@@ -488,7 +545,9 @@ function handleCollision(item) {
         }
         scoreSpan.textContent = score;
 
-        if (score > 2000) {
+        // Message "BONUS EXPERT" affiché UNE SEULE FOIS au franchissement des 2000 pts
+        if (score > 2000 && !expertBonusShown) {
+            expertBonusShown = true;
             createFloatingText("🔥 BONUS EXPERT ACTIVÉ ! 🔥", "positive", chicken.style.left, "140px");
         }
     }
@@ -537,7 +596,6 @@ function endGame(reason) {
 
     finalScoreSpan.textContent = score;
 
-    // 🚀 ENVOI AUTOMATIQUE DES SCORES SI LE JOUEUR EST CONNECTÉ À UN COMPTE
     if (auth && auth.currentUser && score > 0) {
         const userPseudo = auth.currentUser.displayName || "Joueur anonyme";
         submitWeeklyScore(userPseudo, score);
@@ -583,7 +641,7 @@ function createSingleCloud(randomStart) {
 }
 
 // ==========================================================================
-// SYSTÈME DE CLASSEMENT DE LA SEMAINE (FIREBASE)
+// SYSTÈME DE CLASSEMENT SÉCURISÉ (ANTI-CONSOLE)
 // ==========================================================================
 
 function getWeekNumber(d) {
@@ -593,24 +651,35 @@ function getWeekNumber(d) {
     return { week: Math.ceil((((d - yearStart) / 86400000) + 1) / 7), year: d.getUTCFullYear() };
 }
 
-async function submitWeeklyScore(pseudo, gameScore) {
-    if (!pseudo || !db) return;
+const sendScoreToServer = async function(pseudo, gameScore) {
+    if (!pseudo || !db || !auth.currentUser) return;
+    
+    if (gameScore > 5000) { 
+        showAlert("⚠️ Score suspect détecté. Envoi annulé.");
+        return;
+    }
+
     const timeInfo = getWeekNumber(new Date());
     const { collection, addDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
     
     try {
         await addDoc(collection(db, "leaderboard"), {
             name: pseudo,
+            userId: auth.currentUser.uid, 
             score: Number(gameScore),
             date: new Date(),
             week: timeInfo.week,
             year: timeInfo.year
         });
-        console.log("Score envoyé !");
+        console.log("Score enregistré avec succès !");
         loadWeeklyLeaderboard(); 
     } catch (e) {
-        console.error("Erreur Firebase d'écriture : ", e);
+        console.error("Erreur d'écriture : ", e);
     }
+};
+
+function submitWeeklyScore(pseudo, gameScore) {
+    sendScoreToServer(pseudo, gameScore);
 }
 
 async function loadWeeklyLeaderboard() {
@@ -666,46 +735,43 @@ async function loadWeeklyLeaderboard() {
 if (adminResetBtn) {
     adminResetBtn.addEventListener("click", async () => {
         if (!auth.currentUser || auth.currentUser.email !== ADMIN_EMAIL) {
-            alert("Action non autorisée.");
+            showAlert("❌ Action non autorisée.");
             return;
         }
 
-        const confirmation = confirm("⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les scores de la semaine en cours ? Cette action est irréversible.");
-        if (!confirmation) return;
+        showConfirm("⚠️ ATTENTION : Voulez-vous vraiment supprimer TOUS les scores de la semaine en cours ? Cette action est irréversible.", async () => {
+            adminResetBtn.textContent = "Suppression en cours... ⏳";
+            adminResetBtn.disabled = true;
 
-        adminResetBtn.textContent = "Suppression en cours... ⏳";
-        adminResetBtn.disabled = true;
+            const timeInfo = getWeekNumber(new Date());
+            const { collection, getDocs, query, where, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
-        const timeInfo = getWeekNumber(new Date());
-        const { collection, getDocs, query, where, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+            try {
+                const q = query(
+                    collection(db, "leaderboard"),
+                    where("week", "==", timeInfo.week),
+                    where("year", "==", timeInfo.year)
+                );
+                
+                const querySnapshot = await getDocs(q);
+                
+                const deletePromises = [];
+                querySnapshot.forEach((doc) => {
+                    deletePromises.push(deleteDoc(doc.ref));
+                });
 
-        try {
-            // 1. On cible les scores de la semaine
-            const q = query(
-                collection(db, "leaderboard"),
-                where("week", "==", timeInfo.week),
-                where("year", "==", timeInfo.year)
-            );
-            
-            const querySnapshot = await getDocs(q);
-            
-            // 2. On les supprime un par un (Firestore demande une suppression par document)
-            const deletePromises = [];
-            querySnapshot.forEach((doc) => {
-                deletePromises.push(deleteDoc(doc.ref));
-            });
+                await Promise.all(deletePromises);
+                
+                showAlert("✅ Le classement de la semaine a été remis à zéro avec succès !");
+                loadWeeklyLeaderboard(); 
 
-            await Promise.all(deletePromises);
-            
-            alert("✅ Le classement de la semaine a été remis à zéro avec succès !");
-            loadWeeklyLeaderboard(); // Rafraîchit l'affichage immédiatement
-
-        } catch (error) {
-            console.error("Erreur lors du reset Admin :", error);
-            alert("Une erreur est survenue : " + error.message);
-        } finally {
-            adminResetBtn.textContent = "⚙️ Zone Admin : Reset de la Semaine";
-            adminResetBtn.disabled = false;
-        }
+            } catch (error) {
+                console.error("Erreur lors du reset Admin :", error);
+                showAlert("Une erreur est survenue : " + error.message);
+            } finally {
+                adminResetBtn.textContent = "⚙️ Zone Admin : Reset de la Semaine";
+                adminResetBtn.disabled = false;
+            }
+        });
     });
 }
