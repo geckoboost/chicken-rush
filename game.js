@@ -1,5 +1,5 @@
 // ==========================================================================
-// SYSTEME DE NOTIFICATION PERSONNALISÉ CHICKEN RUSH (Placé en haut pour être disponible partout)
+// SYSTEME DE NOTIFICATION PERSONNALISÉ CHICKEN RUSH
 // ==========================================================================
 function showAlert(message) {
     const alertBox = document.getElementById("custom-alert");
@@ -8,29 +8,23 @@ function showAlert(message) {
     if (alertBox && alertMessage) {
         alertMessage.textContent = message;
         alertBox.style.display = "block";
-        alertBox.style.animation = "fadeIn 0.3s ease-out";
 
-        // Supprime l'ancien timer de fermeture s'il y en a un actif
         if (window.alertTimeout) clearTimeout(window.alertTimeout);
 
         window.alertTimeout = setTimeout(() => {
             alertBox.style.display = "none";
         }, 3500);
     } else {
-        // Sécurité si les éléments HTML ne sont pas trouvés
         alert(message);
     }
 }
 
-// Outil de confirmation stylisé Chicken Rush (remplace le confirm() natif, qui
-// affiche obligatoirement le domaine de l'hébergeur — impossible à rebrander).
 function showConfirm(message, onConfirm) {
     const box = document.getElementById("custom-confirm");
     const msg = document.getElementById("custom-confirm-message");
     const okBtn = document.getElementById("custom-confirm-ok");
     const cancelBtn = document.getElementById("custom-confirm-cancel");
 
-    // Fallback de sécurité si la modale HTML est absente
     if (!box || !msg || !okBtn || !cancelBtn) {
         if (confirm(message)) onConfirm();
         return;
@@ -39,7 +33,6 @@ function showConfirm(message, onConfirm) {
     msg.textContent = message;
     box.style.display = "flex";
 
-    // On clone les boutons pour purger les anciens écouteurs (évite les doublons)
     const newOk = okBtn.cloneNode(true);
     const newCancel = cancelBtn.cloneNode(true);
     okBtn.replaceWith(newOk);
@@ -51,7 +44,7 @@ function showConfirm(message, onConfirm) {
 }
 
 // ==========================================================================
-// 0. CONFIGURATION & INITIALISATION FIREBASE (Avec Auth et Firestore)
+// 0. CONFIGURATION & INITIALISATION FIREBASE
 // ==========================================================================
 
 const firebaseConfig = {
@@ -65,7 +58,7 @@ const firebaseConfig = {
 
 let db = null;
 let auth = null;
-let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
+let currentAuthMode = "signup";
 
 (async () => {
   try {
@@ -78,24 +71,22 @@ let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
     auth = getAuth(app);
     console.log("✅ Firebase & Auth prêts");
 
-    // Écouteur d'état de connexion de l'utilisateur
     onAuthStateChanged(auth, (user) => {
         const loginBtn = document.getElementById("login-btn");
         if (user && loginBtn) {
             const pseudo = user.displayName || "Joueur";
             localStorage.setItem("playerPseudo", pseudo);
-            loginBtn.innerHTML = `👤 Profil : <strong>${pseudo}</strong>`;
-            updatePlayerNameHUD(); // 👈 met à jour le pseudo dans la barre des scores
+            loginBtn.innerHTML = `🔓 SE DÉCONNECTER (<strong>${pseudo}</strong>)`;
+            updatePlayerNameHUD(); 
 
-            // 👑 VERIFICATION DES DROITS ADMIN
             if (user.email === ADMIN_EMAIL && adminResetBtn) {
-                adminResetBtn.style.display = "block"; // Affiche le bouton secret
+                adminResetBtn.style.display = "block";
             }
         } else {
             localStorage.removeItem("playerPseudo");
             if (loginBtn) loginBtn.innerHTML = `🔐 SE CONNECTER / S'INSCRIRE`;
-            updatePlayerNameHUD(); // 👈 repasse en "Invité"
-            if (adminResetBtn) adminResetBtn.style.display = "none"; // Cache le bouton
+            updatePlayerNameHUD(); 
+            if (adminResetBtn) adminResetBtn.style.display = "none";
         }
     });
 
@@ -108,7 +99,7 @@ let currentAuthMode = "signup"; // "signup" (Inscription) ou "login" (Connexion)
 // 1. ÉLÉMENTS DU DOM & VARIABLES GLOBALES
 // ==========================================================================
 const adminResetBtn = document.getElementById("admin-reset-btn");
-const ADMIN_EMAIL = "christophe.gineste@hotmail.fr"; // 👈 EMAIL FIREBASE VALIDE
+const ADMIN_EMAIL = "crispybug@hotmail.com"; 
 const game = document.getElementById("game");
 const introScreen = document.getElementById("intro-screen");
 const gameOverScreen = document.getElementById("game-over");
@@ -126,7 +117,6 @@ const highScoresList = document.getElementById("high-scores-list");
 const loginBtn = document.getElementById("login-btn");
 const muteBtn = document.getElementById("mute-btn");
 
-// Éléments de la fenêtre d'authentification (Modal)
 const authModal = document.getElementById("auth-modal");
 const authTitle = document.getElementById("auth-title");
 const authPseudoInput = document.getElementById("auth-pseudo");
@@ -135,6 +125,9 @@ const authPasswordInput = document.getElementById("auth-password");
 const authSubmitBtn = document.getElementById("auth-submit-btn");
 const authSwitchText = document.getElementById("auth-switch-text");
 const authCloseBtn = document.getElementById("auth-close-btn");
+
+// Récupération de l'élément d'affichage RGPD
+const marketingNotice = document.getElementById("auth-marketing-notice");
 
 // AUDIO & EFFETS SONORES
 const soundBgm = new Audio("assets/sounds/bg-music.mp3");
@@ -163,7 +156,7 @@ let timerInterval;
 let cloudInterval; 
 let isGameRunning = false;
 let wormComboCount = 0; 
-let expertBonusShown = false; // Bonus expert affiché une seule fois par partie
+let expertBonusShown = false; 
 
 let levelBanner = document.createElement("div");
 levelBanner.classList.add("sky-level-display");
@@ -180,18 +173,8 @@ let spawnSpeed = 1000;
 const keys = { left: false, right: false };
 const CHICKEN_SPEED = 8; 
 
-function startMobileBlink() {
-    const promoText = document.querySelector(".promo-text");
-    if (promoText) {
-        setInterval(() => {
-            promoText.style.opacity = (promoText.style.opacity === "0.2") ? "1" : "0.2";
-        }, 750);
-    }
-}
-window.addEventListener("DOMContentLoaded", startMobileBlink);
-
 // ==========================================================================
-// 2. ÉCOUTEURS D'ÉVÉNEMENTS & SYSTÈME D'AUTHENTIFICATION (CONNEXION COMPTE)
+// 2. ÉCOUTEURS D'ÉVÉNEMENTS & SYSTÈME D'AUTHENTIFICATION
 // ==========================================================================
 
 if (startBtn) {
@@ -222,6 +205,12 @@ if (loginBtn) {
             });
         } else {
             if (authModal) {
+                // S'ouvre par défaut en mode inscription (Créer un compte) -> On affiche le RGPD
+                currentAuthMode = "signup";
+                authTitle.textContent = "Créer un compte";
+                authPseudoInput.parentElement.style.display = "block";
+                if (marketingNotice) marketingNotice.style.setProperty("display", "block", "important");
+                
                 authModal.style.display = "flex";
                 authModal.classList.remove("hidden");
             }
@@ -244,11 +233,19 @@ if (authSwitchText) {
             currentAuthMode = "login";
             authTitle.textContent = "Connexion";
             authPseudoInput.parentElement.style.display = "none"; 
+            
+            // Masque la phrase RGPD en mode Connexion
+            if (marketingNotice) marketingNotice.style.setProperty("display", "none", "important");
+            
             authSwitchText.textContent = "Pas de compte ? Inscrivez-vous ici";
         } else {
             currentAuthMode = "signup";
             authTitle.textContent = "Créer un compte";
             authPseudoInput.parentElement.style.display = "block"; 
+            
+            // Réaffiche la phrase RGPD en mode Inscription
+            if (marketingNotice) marketingNotice.style.setProperty("display", "block", "important");
+            
             authSwitchText.textContent = "Déjà un compte ? Connectez-vous ici";
         }
     });
@@ -266,7 +263,7 @@ if (authSubmitBtn) {
         }
 
         const { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js");
-        const { collection, getDocs, query, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        const { collection, getDocs, query, where, doc, setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
         authSubmitBtn.textContent = "Chargement... ⏳";
         authSubmitBtn.disabled = true;
@@ -292,17 +289,25 @@ if (authSubmitBtn) {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 await updateProfile(userCredential.user, { displayName: pseudo });
 
-                // 🔧 onAuthStateChanged a capturé l'utilisateur AVANT que updateProfile
-                // ne pose le displayName (et ne se re-déclenche pas après). On force donc
-                // la mise à jour du HUD et du bouton ici, où le pseudo est connu.
+                // Sauvegarde du consentement marketing suite à l'action d'inscription
+                if (db) {
+                    await setDoc(doc(collection(db, "users_marketing"), userCredential.user.uid), {
+                        uid: userCredential.user.uid,
+                        pseudo: pseudo,
+                        email: email,
+                        newsletterOptIn: true,
+                        signupDate: new Date()
+                    });
+                }
+
                 localStorage.setItem("playerPseudo", pseudo);
-                if (loginBtn) loginBtn.innerHTML = `👤 Profil : <strong>${pseudo}</strong>`;
+                if (loginBtn) loginBtn.innerHTML = `🔓 SE DÉCONNECTER (<strong>${pseudo}</strong>)`;
                 updatePlayerNameHUD();
 
                 showAlert(`Compte créé avec succès ! Bienvenue ${pseudo} 🎉`);
             } else {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                updatePlayerNameHUD(); // 🔧 reflète le pseudo dès la connexion
+                updatePlayerNameHUD(); 
                 showAlert(`Ravi de vous revoir ${userCredential.user.displayName || "Joueur"} ! 👋`);
             }
 
@@ -380,7 +385,7 @@ function initGame() {
     keys.left = false; keys.right = false;
     scoreSpan.textContent = score; timerSpan.textContent = timeLeft;
     updateHeartsDisplay();
-    updatePlayerNameHUD(); // 👈 affiche le pseudo dès le début de partie
+    updatePlayerNameHUD(); 
 
     const oldItems = game.querySelectorAll(".item");
     oldItems.forEach(item => item.remove());
@@ -429,8 +434,6 @@ function updateHeartsDisplay() {
     if (heartsContainer) heartsContainer.textContent = "❤️".repeat(lives);
 }
 
-// Affiche le pseudo du joueur dans le HUD : displayName Firebase si connecté,
-// sinon le dernier pseudo mémorisé, sinon "Invité". Tolère l'absence de Firebase.
 function updatePlayerNameHUD() {
     const span = document.getElementById("player-name");
     if (!span) return;
@@ -452,9 +455,13 @@ function gameLoop() {
 
     const items = game.querySelectorAll(".item");
     const chickenRect = chicken.getBoundingClientRect();
+    
+    // Hitbox recalibrée tête / bec de la poule
     const chickenHitbox = {
-        top: chickenRect.top + 195, bottom: chickenRect.bottom - 60,
-        left: chickenRect.left + 80, right: chickenRect.right - 100   
+        top: chickenRect.top + 130, 
+        bottom: chickenRect.bottom - 90,
+        left: chickenRect.left + 110, 
+        right: chickenRect.right - 160   
     };
 
     items.forEach(item => {
@@ -545,7 +552,6 @@ function handleCollision(item) {
         }
         scoreSpan.textContent = score;
 
-        // Message "BONUS EXPERT" affiché UNE SEULE FOIS au franchissement des 2000 pts
         if (score > 2000 && !expertBonusShown) {
             expertBonusShown = true;
             createFloatingText("🔥 BONUS EXPERT ACTIVÉ ! 🔥", "positive", chicken.style.left, "140px");
@@ -641,7 +647,7 @@ function createSingleCloud(randomStart) {
 }
 
 // ==========================================================================
-// SYSTÈME DE CLASSEMENT SÉCURISÉ (ANTI-CONSOLE)
+// SYSTÈME DE CLASSEMENT SÉCURISÉ
 // ==========================================================================
 
 function getWeekNumber(d) {

@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <title>Chicken Rush</title>
     <link rel="stylesheet" href="style.css"/>
+	<link rel="icon" href="assets/logo-crispybug.png"/>
+
+    <!-- Données structurées Schema.org pour l'indexation Google Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoGame",
+      "name": "Chicken Rush",
+      "genre": "Arcade Game",
+      "gamePlatform": "Web Browser",
+      "author": {
+        "@type": "Organization",
+        "name": "CrispyBug Studio",
+        "url": "https://www.crispybug.com"
+      },
+      "description": "Aidez votre poule à attraper les insectes dans ce jeu d'arcade frénétique par navigateur et tentez de gagner des bons d'achat chaque semaine."
+    }
+    </script>
 </head>
 <body>
 
@@ -88,11 +106,9 @@
 
         <div class="high-scores-container">
             <h3>🏆 CLASSEMENT DE LA SEMAINE 🏆</h3>
-            <ol id="high-scores-list" style="list-style:none; padding:0; margin:0;">
-                <!-- Rempli dynamiquement par Firebase -->
-            </ol>
+            <ol id="high-scores-list">
+                </ol>
 
-            <!-- Bouton Administrateur (caché par défaut) -->
             <button id="admin-reset-btn" type="button" style="display: none; background: #d32f2f; color: white; border: none; padding: 8px 12px; margin: 10px auto; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; width: 90%;">
                 ⚙️ Zone Admin : Reset de la Semaine
             </button>
@@ -107,9 +123,6 @@
 
 </div>
 
-<!-- ====================================================================== -->
-<!-- MODALE D'AUTHENTIFICATION (à la racine pour un affichage fiable)        -->
-<!-- ====================================================================== -->
 <div id="auth-modal" class="hidden" style="background: rgba(0,0,0,0.85); position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; justify-content: center; align-items: center;">
     <div style="background: #2c3e50; padding: 25px; border-radius: 10px; width: 300px; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center;">
         <h3 id="auth-title" style="margin-top: 0; color: #ffca28;">Créer un compte</h3>
@@ -129,6 +142,10 @@
             <input type="password" id="auth-password" placeholder="6 caractères min." style="width: 100%; padding: 8px; border-radius: 4px; border: none; margin-top: 4px; box-sizing: border-box;">
         </div>
 
+        <p id="auth-marketing-notice" style="font-size: 11px; color: #cbd5e1; line-height: 1.4; margin-bottom: 15px; text-align: left; display: block;">
+            En créant votre compte, vous acceptez que CrispyBug Studio utilise votre e-mail pour enregistrer vos scores et vous envoyer vos coupons de réduction ou offres exclusives.
+        </p>
+
         <button id="auth-submit-btn" type="button" style="background: #27ae60; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-bottom: 10px;">Valider</button>
         
         <p id="auth-switch-text" style="font-size: 12px; margin: 5px 0 0; cursor: pointer; text-decoration: underline; color: #cbd5e1;">Déjà un compte ? Connectez-vous ici</p>
@@ -136,21 +153,50 @@
     </div>
 </div>
 
-<!-- Changement ici : Ajout du type="module" -->
+<!-- ==========================================================================
+   ENVELOPPE SEO (Contenu textuel indexable et sémantique pour les robots)
+   ========================================================================== */ -->
+<section id="seo-shell" aria-label="Informations et règles du jeu Chicken Rush">
+    <header>
+        <h2>Chicken Rush : Le jeu d'arcade gratuit par CrispyBug Studio</h2>
+        <p>Découvrez <strong>Chicken Rush</strong>, un jeu par navigateur frénétique et addictif développé par <em>CrispyBug Studio</em>. Votre mission ? Aidez notre poule héroïque à nettoyer le terrain en attrapant un maximum d'insectes tout en évitant les redoutables prédateurs qui rôdent.</p>
+    </header>
+
+    <article>
+        <h3>Comment jouer et gagner des réductions ?</h3>
+        <p>Le gameplay est simple mais exigeant. Utilisez les flèches directionnelles de votre clavier ou les boutons tactiles de votre smartphone pour déplacer la poule de gauche à droite :</p>
+        <ul>
+            <li><strong>Les Vers (Worms) :</strong> Rapportent +10 points. Attrapez-en 3 d'affilée pour déclencher un multiplicateur <em>Combo Ver</em> offrant un bonus massif de +30 points !</li>
+            <li><strong>Les Insectes et Sauterelles :</strong> Les insectes classiques rapportent +25 points, tandis que les sauterelles (grasshoppers) vous propulsent au classement avec +50 points.</li>
+        </ul>
+    </article>
+
+    <article>
+        <h3>Prenez garde aux dangers de la ferme !</h3>
+        <p>Tout n'est pas si simple dans Chicken Rush. Les cieux et les buissons cachent des menaces qui réduiront votre score ou mettront fin à votre partie :</p>
+        <ul>
+            <li>Les corbeaux (crows) et les belettes (weasels) vous infligent de lourdes pénalités de score (jusqu'à -100 points).</li>
+            <li>Le renard (fox) est votre pire ennemi : chaque contact vous coûte une vie. Vous disposez de 3 vies avant le Game Over.</li>
+        </ul>
+    </article>
+
+    <article>
+        <h3>Un jeu concours hebdomadaire</h3>
+        <p>Plus qu'un simple divertissement d'arcade, Chicken Rush récompense la fidélité et le skill de sa communauté. En créant un compte joueur sécurisé via Firebase, vos meilleurs scores sont enregistrés en temps réel sur notre classement de la semaine. Terminez parmi les premiers joueurs pour remporter des <strong>bons d'achat et coupons de réduction exclusifs</strong> valables sur la boutique CrispyBug.</p>
+    </article>
+
+    <footer>
+        <p>Configuration requise : Jeu HTML5/JavaScript compatible avec tous les navigateurs modernes (Chrome, Safari, Firefox, Edge) sur ordinateurs, tablettes et smartphones iOS ou Android. Aucune installation requise.</p>
+    </footer>
+</section>
+
 <script type="module" src="game.js"></script>
 
-<!-- ====================================================================== -->
-<!-- NOTIFICATION PERSONNALISÉE (remplace alert) — brandée Chicken Rush      -->
-<!-- ====================================================================== -->
 <div id="custom-alert" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #2c3e50; color: white; padding: 15px 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 10000; min-width: 250px; border: 2px solid #ffca28; text-align: center; font-family: sans-serif;">
     <div style="font-weight: bold; color: #ffca28; margin-bottom: 5px; font-size: 14px; letter-spacing: 1px;">🐔 CHICKEN RUSH</div>
     <div id="custom-alert-message" style="font-size: 14px;">Message de notification</div>
 </div>
 
-<!-- ====================================================================== -->
-<!-- CONFIRMATION PERSONNALISÉE (remplace confirm) — brandée Chicken Rush    -->
-<!-- z-index 10001 : passe au-dessus de l'alerte (10000) et de l'auth (9999) -->
-<!-- ====================================================================== -->
 <div id="custom-confirm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10001; justify-content: center; align-items: center; font-family: sans-serif;">
     <div style="background: #2c3e50; padding: 25px; border-radius: 10px; width: 300px; color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.5); text-align: center;">
         <div style="font-weight: bold; color: #ffca28; margin-bottom: 10px; letter-spacing: 1px;">🐔 CHICKEN RUSH</div>

@@ -86,7 +86,6 @@ body {
 
 .game-title {
     font-family: 'Impact', 'Arial Black', sans-serif;
-    /* ✅ S'adapte de façon fluide entre 32px (mobile) et 48px (PC max) */
     font-size: 32px; 
     font-weight: 900;
     font-style: italic;
@@ -98,7 +97,7 @@ body {
     filter: drop-shadow(3px 3px 0px #0d47a1);
     margin-top: -1px;
     margin-bottom: -20px;
-    padding-right: 10px; /* ✅ Empêche le H d'être rogné */
+    padding-right: 10px;
 }
 
 .intro-chicken {
@@ -130,11 +129,9 @@ body {
     width: 100%;
     display: block;
     box-sizing: border-box;
-    /* On applique une transition pour que le clignotement reste fluide */
-    transition: opacity 0.4s ease-in-out; 
 }
 
-/* L'animation de clignotement fluide */
+/* L'animation de clignotement fluide CSS optimisée */
 .blink-effect {
     animation: softBlink 1.5s infinite ease-in-out;
 }
@@ -180,7 +177,6 @@ body {
     color: #ff5252;
 }
 
-/* Style de la règle combo */
 .combo-rule {
     border-bottom: 2px dashed rgba(255, 215, 0, 0.4);
     padding-bottom: 8px;
@@ -278,6 +274,16 @@ body {
     border-color: #b0bec5;
 }
 
+/* Pseudo dans le HUD : tronqué proprement si trop long, pour ne pas pousser le reste */
+#player-name {
+    display: inline-block;
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
 /* ==========================================================================
    ZONE DE JEU PRINCIPALE
    ========================================================================== */
@@ -287,7 +293,7 @@ body {
     height: 700px;
     overflow: hidden;
     background: url("assets/ground.png") bottom center no-repeat, #87d9fa;
-    background-size: 100% auto, cover; /* ✅ Conserve le ratio de la grange */
+    background-size: 100% auto, cover;
 }
 
 #ground {
@@ -308,7 +314,7 @@ body {
     background: url("assets/chicken.png");
     background-size: contain;
     background-repeat: no-repeat;
-    bottom: -115px; /* ✅ Positionnée parfaitement sur le gazon */
+    bottom: -115px;
     z-index: 10;
     transition: left 0.1s linear;
 }
@@ -535,21 +541,20 @@ body {
    ========================================================================== */
 .sky-level-display {
     position: absolute;
-    top: 80px; /* Positionné juste en dessous du HUD */
+    top: 80px; 
     left: 50%;
     transform: translateX(-50%);
     font-family: 'Impact', sans-serif;
     font-size: 38px;
     letter-spacing: 3px;
-    color: rgba(255, 255, 255, 0.25); /* Blanc semi-transparent très esthétique */
+    color: rgba(255, 255, 255, 0.25); 
     text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-    pointer-events: none; /* Ignore les clics souris/tactile */
-    z-index: 2; /* Devant les nuages, derrière le touchpad et le joueur */
+    pointer-events: none; 
+    z-index: 2; 
     text-align: center;
     user-select: none;
 }
 
-/* Animation lors du changement de niveau */
 .pulse-animation {
     animation: levelPulse 0.6s ease-out;
 }
@@ -561,7 +566,7 @@ body {
     }
     50% {
         transform: translateX(-50%) scale(1.3);
-        color: rgba(255, 235, 59, 0.8); /* Flash jaune doré au milieu de l'effet */
+        color: rgba(255, 235, 59, 0.8); 
         text-shadow: 0px 4px 15px rgba(245, 124, 0, 0.5);
     }
     100% {
@@ -574,14 +579,28 @@ body {
    STYLE DU LIEN CRISPYBUG (ÉCRAN GAME OVER)
    ========================================================================== */
 .gameover-website a {
-    color: #ffffff; /* Couleur blanche pour un maximum de contraste */
-    text-decoration: underline; /* Laisse le lien souligné pour bien l'identifier */
+    color: #ffffff; 
+    text-decoration: underline; 
     font-weight: bold;
     font-size: 16px;
     transition: color 0.2s ease;
 }
 
-/* Changement de couleur uniquement lorsque la souris passe dessus */
 .gameover-website a:hover {
-    color: #ffeb3b; /* Devient jaune vif au survol */
+    color: #ffeb3b; 
+}
+
+/* ==========================================================================
+   OPTION B : MASQUAGE STRICT D'ACCESSIBILITÉ (SEO-FRIENDLY SHELL)
+   ========================================================================== */
+#seo-shell {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }

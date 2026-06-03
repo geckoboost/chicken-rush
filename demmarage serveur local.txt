@@ -1,0 +1,39 @@
+powershell
+
+cd "C:\Users\m52441\Downloads\chicken-rush V3.0"
+
+puis copier : 
+
+$port = 8000
+$root = (Get-Location).Path
+$listener = New-Object System.Net.HttpListener
+$listener.Prefixes.Add("http://localhost:$port/")
+$listener.Start()
+Write-Host "Serveur lance : http://localhost:$port  (Ctrl+C pour arreter)" -ForegroundColor Green
+
+$mime = @{
+  ".html"="text/html; charset=utf-8"; ".js"="text/javascript; charset=utf-8";
+  ".mjs"="text/javascript; charset=utf-8"; ".css"="text/css; charset=utf-8";
+  ".json"="application/json; charset=utf-8"; ".png"="image/png";
+  ".jpg"="image/jpeg"; ".jpeg"="image/jpeg"; ".gif"="image/gif";
+  ".svg"="image/svg+xml"; ".ico"="image/x-icon"; ".mp3"="audio/mpeg";
+  ".wav"="audio/wav"; ".ogg"="audio/ogg"; ".webp"="image/webp"
+}
+
+while ($listener.IsListening) {
+  $ctx = $listener.GetContext()
+  $rel = [Uri]::UnescapeDataString($ctx.Request.Url.AbsolutePath.TrimStart('/'))
+  if ([string]::IsNullOrEmpty($rel)) { $rel = "index.html" }
+  $path = Join-Path $root $rel
+  if (Test-Path $path -PathType Leaf) {
+    $bytes = [System.IO.File]::ReadAllBytes($path)
+    $ext = [System.IO.Path]::GetExtension($path).ToLower()
+    if ($mime.ContainsKey($ext)) { $ctx.Response.ContentType = $mime[$ext] }
+    $ctx.Response.ContentLength64 = $bytes.Length
+    $ctx.Response.OutputStream.Write($bytes, 0, $bytes.Length)
+  } else { $ctx.Response.StatusCode = 404 }
+  $ctx.Response.OutputStream.Close()
+}
+
+
+Laisse cette fenêtre PowerShell ouverte, ouvre http://localhost:8000 dans le navigateur, et le bouton JOUER marchera. Pour arrêter : Ctrl + C.
