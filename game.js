@@ -60,6 +60,11 @@ let db = null;
 let auth = null;
 let currentAuthMode = "signup";
 
+// Notifie la page parente (Shopify) de l'état du jeu pour masquer/afficher le menu pendant la partie
+function crNotify(state) {
+  try { if (window.parent && window.parent !== window) window.parent.postMessage({ source: "chicken-rush", state: state }, "*"); } catch (e) {}
+}
+
 (async () => {
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -381,6 +386,7 @@ function initGame() {
     }
 
     score = 0; lives = 3; timeLeft = 90; currentLevel = 1; itemSpeed = 4; spawnSpeed = 1000; isGameRunning = true; wormComboCount = 0; expertBonusShown = false;
+    crNotify("playing");
     generateClouds();
     keys.left = false; keys.right = false;
     scoreSpan.textContent = score; timerSpan.textContent = timeLeft;
@@ -578,6 +584,7 @@ function showComboBanner() {
 
 function endGame(reason) {
     isGameRunning = false;
+    crNotify("idle");
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     clearInterval(spawnInterval); clearInterval(timerInterval); clearInterval(cloudInterval); 
     soundBgm.pause(); soundBgm.currentTime = 0;
