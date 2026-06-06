@@ -604,3 +604,75 @@ body {
     white-space: nowrap;
     border: 0;
 }
+
+/* ==========================================================================
+   CLASSEMENT SUR L'ÉCRAN D'INTRO (public, visible sans jouer)
+   ========================================================================== */
+.intro-scores {
+    margin-top: 18px;
+    margin-bottom: 4px;
+}
+
+/* ==========================================================================
+   BLOC DE PARTAGE (écran de fin de partie)
+   ========================================================================== */
+.share-block {
+    background: rgba(0, 230, 118, 0.08);
+    border: 2px dashed #00e676;
+    border-radius: 12px;
+    padding: 12px;
+    width: 85%;
+    max-width: 320px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.share-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #e0f7fa;
+    margin-bottom: 10px;
+    line-height: 1.3;
+}
+
+#share-btn {
+    padding: 10px 22px;
+    font-size: 15px;
+    font-family: 'Impact', sans-serif;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    background: linear-gradient(to bottom, #00e676, #00c853);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 3px 0 #007e33;
+    transition: transform 0.1s;
+}
+
+#share-btn:active { transform: translateY(3px); box-shadow: 0 0 0 #007e33; }
+
+.share-icons {
+    display: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.share-icons.show { display: flex; }
+
+.share-net {
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 14px;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.share-net:hover { background: rgba(255, 255, 255, 0.25); }
+.share-net:active { transform: scale(0.95); }

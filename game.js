@@ -76,6 +76,9 @@ function crNotify(state) {
     auth = getAuth(app);
     console.log("✅ Firebase & Auth prêts");
 
+    // Classement public : affiché dès le chargement (visible sans jouer, sur l'écran d'intro)
+    loadWeeklyLeaderboard();
+
     onAuthStateChanged(auth, (user) => {
         const loginBtn = document.getElementById("login-btn");
         if (user && loginBtn) {
@@ -695,50 +698,59 @@ function submitWeeklyScore(pseudo, gameScore) {
     sendScoreToServer(pseudo, gameScore);
 }
 
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+// Charge le classement de la semaine dans TOUS les emplacements présents
+// (écran de fin + écran d'intro => classement public visible sans jouer)
 async function loadWeeklyLeaderboard() {
-    if (!highScoresList) return;
-    highScoresList.innerHTML = "<li style='list-style:none;text-align:center;'>Mise à jour du classement... ⏳</li>";
+    const targets = [
+        document.getElementById("high-scores-list"),
+        document.getElementById("high-scores-list-intro")
+    ].filter(Boolean);
+    if (!targets.length) return;
+    const setHtml = (html) => targets.forEach(t => { t.innerHTML = html; });
+
+    setHtml("<li style='list-style:none;text-align:center;'>Mise à jour du classement... ⏳</li>");
     const timeInfo = getWeekNumber(new Date());
 
     if (!db) {
-         highScoresList.innerHTML = "<li style='list-style:none;text-align:center;color:#ff8a80;'>Serveur indisponible.</li>";
-         return;
+        setHtml("<li style='list-style:none;text-align:center;color:#ff8a80;'>Serveur indisponible.</li>");
+        return;
     }
 
     const { collection, getDocs, query, orderBy, limit, where } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
 
     try {
         const q = query(
-            collection(db, "leaderboard"), 
+            collection(db, "leaderboard"),
             where("week", "==", timeInfo.week),
             where("year", "==", timeInfo.year),
-            orderBy("score", "desc"), 
+            orderBy("score", "desc"),
             limit(5)
         );
-        
+
         const querySnapshot = await getDocs(q);
-        highScoresList.innerHTML = ""; 
 
         if (querySnapshot.empty) {
-            highScoresList.innerHTML = "<li style='list-style:none;text-align:center;'>Aucun score cette semaine. Soyez le premier ! 🥇</li>";
+            setHtml("<li style='list-style:none;text-align:center;'>Aucun score cette semaine. Soyez le premier ! 🥇</li>");
             return;
         }
 
-        let rank = 1;
+        let rank = 1, html = "";
         querySnapshot.forEach((doc) => {
             const data = doc.data();
-            const li = document.createElement("li");
             let badge = `${rank}.`;
             if (rank === 1) badge = "👑 1er";
             if (rank === 2) badge = "🥈 2e";
             if (rank === 3) badge = "🥉 3e";
-            
-            li.innerHTML = `<span>${badge} ${data.name}</span> <strong style="color:#ffca28;">${data.score} pts</strong>`;
-            highScoresList.appendChild(li);
+            html += `<li><span>${badge} ${escapeHtml(data.name)}</span> <strong style="color:#ffca28;">${Number(data.score)} pts</strong></li>`;
             rank++;
         });
+        setHtml(html);
     } catch (e) {
-        highScoresList.innerHTML = "<li style='list-style:none;text-align:center;color:#ff8a80;'>Classement indisponible.</li>";
+        setHtml("<li style='list-style:none;text-align:center;color:#ff8a80;'>Classement indisponible.</li>");
     }
 }
 
@@ -788,3 +800,56 @@ if (adminResetBtn) {
         });
     });
 }
+
+// ==========================================================================
+// PARTAGE DU SCORE (fin de partie) — Web Share API + réseaux + copier le lien
+// ==========================================================================
+function getShareData() {
+    const url = "https://www.crispybug.com/pages/chicken-rush-le-jeu";
+    const pts = (finalScoreSpan && finalScoreSpan.textContent) ? finalScoreSpan.textContent : String(score || 0);
+    const text = `🐔 J'ai marqué ${pts} points à Chicken Rush ! Bats-moi et tente de gagner des réductions CrispyBug 👇`;
+    return { url, text, title: "Chicken Rush" };
+}
+
+const shareBtn = document.getElementById("share-btn");
+if (shareBtn) {
+    shareBtn.addEventListener("click", async () => {
+        const d = getShareData();
+        if (navigator.share) {
+            try {
+                await navigator.share({ title: d.title, text: d.text, url: d.url });
+            } catch (e) {
+                const icons = document.querySelector(".share-icons");
+                if (icons) icons.classList.add("show");
+            }
+        } else {
+            const icons = document.querySelector(".share-icons");
+            if (icons) icons.classList.add("show");
+        }
+    });
+}
+
+document.querySelectorAll(".share-net").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        const d = getShareData();
+        const eText = encodeURIComponent(d.text);
+        const eUrl = encodeURIComponent(d.url);
+        const eFull = encodeURIComponent(`${d.text} ${d.url}`);
+        let shareUrl = "";
+        switch (btn.dataset.net) {
+            case "whatsapp": shareUrl = `https://wa.me/?text=${eFull}`; break;
+            case "x": shareUrl = `https://twitter.com/intent/tweet?text=${eText}&url=${eUrl}`; break;
+            case "facebook": shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${eUrl}`; break;
+            case "copy": {
+                const t = `${d.text} ${d.url}`;
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(t).then(() => showAlert("Lien copié ! 📋")).catch(() => showAlert(t));
+                } else {
+                    showAlert(t);
+                }
+                return;
+            }
+        }
+        if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
+    });
+});

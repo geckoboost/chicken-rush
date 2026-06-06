@@ -81,7 +81,14 @@
             </div>
 
             <button id="start-btn" type="button">JOUER</button>
-            
+
+            <div class="high-scores-container intro-scores">
+                <h3>🏆 CLASSEMENT DE LA SEMAINE 🏆</h3>
+                <ol id="high-scores-list-intro">
+                    <li style="list-style:none;text-align:center;">Chargement du classement… ⏳</li>
+                </ol>
+            </div>
+
             <div class="marketing-copyright">Copyright © CrispyBug 2026</div>
         </div>
 
@@ -112,6 +119,17 @@
             <button id="admin-reset-btn" type="button" style="display: none; background: #d32f2f; color: white; border: none; padding: 8px 12px; margin: 10px auto; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; width: 90%;">
                 ⚙️ Zone Admin : Reset de la Semaine
             </button>
+        </div>
+
+        <div class="share-block">
+            <p class="share-title">📣 Défie tes amis et fais grimper le classement !</p>
+            <button id="share-btn" type="button">Partager mon score</button>
+            <div class="share-icons">
+                <button class="share-net" data-net="whatsapp" type="button">WhatsApp</button>
+                <button class="share-net" data-net="x" type="button">X</button>
+                <button class="share-net" data-net="facebook" type="button">Facebook</button>
+                <button class="share-net" id="copy-link" data-net="copy" type="button">🔗 Copier</button>
+            </div>
         </div>
 
         <button id="restart-btn" type="button">Rejouer</button>
