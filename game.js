@@ -53,21 +53,28 @@ const firebaseConfig = {
   projectId: "chicken-rush-8f0f2",
   storageBucket: "chicken-rush-8f0f2.firebasestorage.app",
   messagingSenderId: "588961258369",
-  appId: "1:588961258369:web:934af13c005bd4a841e680"
+  appId: "1:588961258369:web:934af13c005bd4a841e680",
+  measurementId: "G-N1NB1NW8DK"
 };
 
 let db = null;
 let auth = null;
 let currentAuthMode = "signup";
+let fbAnalytics = null;   // Firebase Analytics (propriété GA4 dédiée au jeu)
+let fbLogEvent = null;
 
 // Notifie la page parente (Shopify) de l'état du jeu pour masquer/afficher le menu pendant la partie
 function crNotify(state) {
   try { if (window.parent && window.parent !== window) window.parent.postMessage({ source: "chicken-rush", state: state }, "*"); } catch (e) {}
 }
 
-// Tracking analytics — GA4 boutique (gtag). Firebase Analytics ajouté quand activé sur le projet.
+// Tracking analytics — events envoyés à 2 propriétés GA4 :
+//  - boutique CrispyBug (gtag, ciblé via send_to pour ne PAS polluer avec les events Firebase)
+//  - propriété dédiée au jeu (Firebase Analytics logEvent)
 function track(name, params) {
-  try { if (typeof gtag === "function") gtag("event", name, Object.assign({ game_name: "chicken-rush" }, params || {})); } catch (e) {}
+  const p = Object.assign({ game_name: "chicken-rush" }, params || {});
+  try { if (typeof gtag === "function") gtag("event", name, Object.assign({ send_to: "G-M8VGX3CN9W" }, p)); } catch (e) {}
+  try { if (fbAnalytics && fbLogEvent) fbLogEvent(fbAnalytics, name, p); } catch (e) {}
 }
 
 (async () => {
@@ -80,6 +87,14 @@ function track(name, params) {
     db = getFirestore(app);
     auth = getAuth(app);
     console.log("✅ Firebase & Auth prêts");
+
+    // Firebase Analytics (propriété GA4 dédiée au jeu)
+    try {
+      const { getAnalytics, logEvent } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js");
+      fbAnalytics = getAnalytics(app);
+      fbLogEvent = logEvent;
+      track("game_view");
+    } catch (e) { console.warn("Analytics indisponible", e); }
 
     // Classement public : affiché dès le chargement (visible sans jouer, sur l'écran d'intro)
     loadWeeklyLeaderboard();
@@ -864,6 +879,3 @@ document.querySelectorAll(".share-net").forEach((btn) => {
         if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
     });
 });
-
-// Événement de chargement du jeu (1 fois)
-track("game_view");
