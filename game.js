@@ -65,6 +65,11 @@ function crNotify(state) {
   try { if (window.parent && window.parent !== window) window.parent.postMessage({ source: "chicken-rush", state: state }, "*"); } catch (e) {}
 }
 
+// Tracking analytics — GA4 boutique (gtag). Firebase Analytics ajouté quand activé sur le projet.
+function track(name, params) {
+  try { if (typeof gtag === "function") gtag("event", name, Object.assign({ game_name: "chicken-rush" }, params || {})); } catch (e) {}
+}
+
 (async () => {
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -312,10 +317,12 @@ if (authSubmitBtn) {
                 if (loginBtn) loginBtn.innerHTML = `🔓 SE DÉCONNECTER (<strong>${pseudo}</strong>)`;
                 updatePlayerNameHUD();
 
+                track("sign_up", { method: "email" });
                 showAlert(`Compte créé avec succès ! Bienvenue ${pseudo} 🎉`);
             } else {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 updatePlayerNameHUD(); 
+                track("login", { method: "email" });
                 showAlert(`Ravi de vous revoir ${userCredential.user.displayName || "Joueur"} ! 👋`);
             }
 
@@ -390,6 +397,7 @@ function initGame() {
 
     score = 0; lives = 3; timeLeft = 90; currentLevel = 1; itemSpeed = 4; spawnSpeed = 1000; isGameRunning = true; wormComboCount = 0; expertBonusShown = false;
     crNotify("playing");
+    track("game_start");
     generateClouds();
     keys.left = false; keys.right = false;
     scoreSpan.textContent = score; timerSpan.textContent = timeLeft;
@@ -588,6 +596,7 @@ function showComboBanner() {
 function endGame(reason) {
     isGameRunning = false;
     crNotify("idle");
+    track("game_over", { score: score, reason: reason });
     if (animationFrameId) cancelAnimationFrame(animationFrameId);
     clearInterval(spawnInterval); clearInterval(timerInterval); clearInterval(cloudInterval); 
     soundBgm.pause(); soundBgm.currentTime = 0;
@@ -815,6 +824,7 @@ const shareBtn = document.getElementById("share-btn");
 if (shareBtn) {
     shareBtn.addEventListener("click", async () => {
         const d = getShareData();
+        track("share", { method: navigator.share ? "native" : "fallback" });
         if (navigator.share) {
             try {
                 await navigator.share({ title: d.title, text: d.text, url: d.url });
@@ -832,6 +842,7 @@ if (shareBtn) {
 document.querySelectorAll(".share-net").forEach((btn) => {
     btn.addEventListener("click", () => {
         const d = getShareData();
+        track("share", { method: btn.dataset.net });
         const eText = encodeURIComponent(d.text);
         const eUrl = encodeURIComponent(d.url);
         const eFull = encodeURIComponent(`${d.text} ${d.url}`);
@@ -853,3 +864,6 @@ document.querySelectorAll(".share-net").forEach((btn) => {
         if (shareUrl) window.open(shareUrl, "_blank", "noopener,noreferrer");
     });
 });
+
+// Événement de chargement du jeu (1 fois)
+track("game_view");
